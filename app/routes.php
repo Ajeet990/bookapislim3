@@ -4,4 +4,4 @@ use Slim\Http\Response;
 
 
 
-$app->get('/user', 'UserController:index');
+$app->get('/user', 'UserHelper:index');
