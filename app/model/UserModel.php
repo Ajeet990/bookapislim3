@@ -11,6 +11,13 @@ class UserModel
 
     public function listUser()
     {
-        return "Listing users";
+        $listUser = array();
+        $userQuery = $this->conn->query("select * from register");
+        while($row = mysqli_fetch_assoc($userQuery)) {
+            array_push($listUser, $row);
+        }
+        return $listUser;
+
+        
     }
 }
