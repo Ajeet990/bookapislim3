@@ -4,4 +4,5 @@ use Slim\Http\Response;
 
 $app->get('/user', 'UserHelper:index');
 $app->get('/users', 'UserHelper:userList');
+$app->post('/signUp', 'UserHelper:signUp');
 

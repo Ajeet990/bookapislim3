@@ -1,7 +1,7 @@
 <?php
 use Slim\App;
-use App\config\Db;
-use App\model\UserModel;
+use App\Config\Db;
+use App\Model\UserModel;
 // use App\controllers\UserController;
 
 $db = new Db();
@@ -23,9 +23,9 @@ $app = new App([
 $container = $app->getContainer();
 $container['UserHelper'] = function($container){
     global $userModelObj;
-    return new \App\controllers\UserController($userModelObj);
+    return new \App\Controllers\UserController($userModelObj);
 };
-require __DIR__.'/../app/routes.php';
+require __DIR__.'/../app/Routes.php';
 
 
 
