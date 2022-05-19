@@ -21,9 +21,9 @@ class UserModel
         
     }
 
-    public function signUp($name, $mobile_no, $address, $email, $password)
+    public function signUp($name, $mobile_no, $address, $email, $password, $dest)
     {
-        $registerQry = $this->conn->query("INSERT INTO `register` (`user_name`, `mobile_no`, `address`, `email`, `password`) VALUES ('$name', '$mobile_no', '$address', '$email', '$password')");
+        $registerQry = $this->conn->query("INSERT INTO `register` (`image`,`user_name`, `mobile_no`, `address`, `email`, `password`) VALUES ('$dest','$name', '$mobile_no', '$address', '$email', '$password')");
         return $registerQry;
 
 

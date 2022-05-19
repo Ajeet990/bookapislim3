@@ -27,17 +27,35 @@ class UserController
     }
     public function signUp(Request $request, Response $response)
     {
-        $params = $request->getParsedBody();
-        $name = trim($params['name'] ?? '');
-        $mobile_no = trim($params['mobile_no'] ?? '');
-        $address = trim($params['address'] ?? '');
-        $email = trim($params['email'] ?? '');
-        $password = trim($params['password'] ?? '');
-        $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email,$password);
-        if($signUpRst) {
-            echo "Registerd";
-        } else {
-            echo "Not registerd";
-        }
+        // $nameKey = $this->csrf->getTokenNameKey();
+        // $valueKey = $this->csrf->getTokenValueKey();
+        // $name = $request->getAttribute($nameKey);
+        // $value = $request->getAttribute($valueKey);
+
+        // echo $name;
+        var_dump($request->getAttribute('csrf_value'));
+
+        // $params = $request->getParsedBody();
+        
+        // $image = $_FILES['image'];
+        // $img_name = $image['name'];
+        // $img_path = $image['tmp_name'];
+        // $dest = __DIR__."/../img/".$img_name;
+        // move_uploaded_file($img_path, $dest);
+
+        // $name = trim($params['name'] ?? '');
+        // $mobile_no = trim($params['mobile_no'] ?? '');
+        // $address = trim($params['address'] ?? '');
+        // $email = trim($params['email'] ?? '');
+        // $password = trim($params['password'] ?? '');
+        // $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        // $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $dest);
+
+        // if($signUpRst) {
+        //     echo "Registerd";
+        // } else {
+        //     echo "Not registerd";
+        // }
     }
 }
