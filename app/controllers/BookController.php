@@ -280,5 +280,49 @@ class BookController
             }
     }
 
+    public function searchBook(Request $request, Response $response, $args)
+    {
+        if( isset($_SESSION['userId']) && $_SESSION['userId'] != '') {  
+            $userTokenDb = $this->valToken->getTokenFromDb($_SESSION['userId']);
+            if($userTokenDb == $_SESSION['userLoggedInToken']) {
+    
+                $searchQry = $args['searchString'];
+                $searchRst = $this->bookModelObj->searchBook($searchQry);
+                if(count($searchRst) > 0) {
+                    $jsonMessage = array("isSuccess" => true,
+                    "message" => "List of searching books.",
+                    "books" => $searchRst);
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(200);
+                } else {
+                    $jsonMessage = array("isSuccess" => true,
+                    "message" => "No books found.");
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(200);
+
+                }
+            } else {
+                $jsonMessage = array("isSuccess" => false,
+                "message" => "Invalid request, Token not matching");
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(401);
+    
+            }
+            } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "User not logged in, please login first.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+            }
+    }
+
 
 }

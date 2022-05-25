@@ -146,5 +146,160 @@ class RequestController
             }
     }
 
+    public function grantIssueRequest(Request $request, Response $response, $args)
+    {
+        if( isset($_SESSION['userId']) && $_SESSION['userId'] != '') {  
+            $userTokenDb = $this->valToken->getTokenFromDb($_SESSION['userId']);
+            if($userTokenDb == $_SESSION['userLoggedInToken']) {
+    
+                $requestingId = $args['requestingId'];
+                $Date = date("Y-m-d");
+                $grantRequestResult = $this->requestModelObj->grantIssueRequest($requestingId, $Date);
+                if($grantRequestResult) {
+                    $jsonMessage = array("isSuccess" => true,
+                    "message" => "Issued Book Successfully.");
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(401);
+                }
+            } else {
+                $jsonMessage = array("isSuccess" => false,
+                "message" => "Invalid request, Token not matching");
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(401);
+    
+            }
+            } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "User not logged in, please login first.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+            }
+    }
+
+    public function cancelIssueRequest(Request $request, Response $response, $args)
+    {
+        if( isset($_SESSION['userId']) && $_SESSION['userId'] != '') {  
+            $userTokenDb = $this->valToken->getTokenFromDb($_SESSION['userId']);
+            if($userTokenDb == $_SESSION['userLoggedInToken']) {
+    
+                $requestingId = (int) $args['requestingId'];
+                $params = $request->getParsedBody();
+                $cancelMessage = trim($params['message'] ?? '');
+                $cancelIssueRequest = $this->requestModelObj->cancelIssueRequest($requestingId, $cancelMessage);
+                if($cancelIssueRequest) {
+                    $jsonMessage = array("isSuccess" => true,
+                    "message" => "Book cancelled successfully.");
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(401);
+                }
+            } else {
+                $jsonMessage = array("isSuccess" => false,
+                "message" => "Invalid request, Token not matching");
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(401);
+    
+            }
+            } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "User not logged in, please login first.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+            }
+    }
+
+    public function returnBookRequest(Request $request, Response $response, $args)
+    {
+        if( isset($_SESSION['userId']) && $_SESSION['userId'] != '') {  
+            $userTokenDb = $this->valToken->getTokenFromDb($_SESSION['userId']);
+            if($userTokenDb == $_SESSION['userLoggedInToken']) {
+                $requestingId = (int) $args['requestingId'];
+                $returnRst = $this->requestModelObj->returnBookRequest($requestingId);
+                if($returnRst) {
+                    $jsonMessage = array("isSuccess" => true,
+                    "message" => "Book return request sent successfully.");
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(200);
+                } else {
+                    $jsonMessage = array("isSuccess" => true,
+                    "message" => "Book not issued.");
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(200);
+                }
+
+            } else {
+                $jsonMessage = array("isSuccess" => false,
+                "message" => "Invalid request, Token not matching");
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(401);
+    
+            }
+            } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "User not logged in, please login first.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+            }
+    }
+
+    public function grantReturnRequest(Request $request, Response $response, $args)
+    {
+        if( isset($_SESSION['userId']) && $_SESSION['userId'] != '') {  
+            $userTokenDb = $this->valToken->getTokenFromDb($_SESSION['userId']);
+            if($userTokenDb == $_SESSION['userLoggedInToken']) {
+
+                $requestingId = (int) $args['requestingId'];
+                $Date = date("Y-m-d");
+                $params = $request->getParsedBody();
+                $userRating = trim($params['userRating'] ?? '');
+
+                $grntRtnRqst = $this->requestModelObj->grantReturnRequest($requestingId, $Date, $userRating);
+                if($grntRtnRqst) {
+                    $jsonMessage = array("isSuccess" => true,
+                    "message" => "Accepted return request successfully.");
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(401);
+                }
+                //code goes here
+            } else {
+                $jsonMessage = array("isSuccess" => false,
+                "message" => "Invalid request, Token not matching");
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(401);
+    
+            }
+            } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "User not logged in, please login first.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+            }
+    }
+
 
 }

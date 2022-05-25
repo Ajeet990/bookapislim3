@@ -74,4 +74,15 @@ class BookModel
         }
         return $myBooks;
     }
+
+    public function searchBook($search)
+    {
+        $searchBooks = array();
+        $searchQry = $this->conn->query("select * from books where book_name LIKE '%$search%'");
+        while($row = mysqli_fetch_assoc($searchQry)) {
+            array_push($searchBooks, $row);
+
+        }
+        return $searchBooks;
+    }
 }
