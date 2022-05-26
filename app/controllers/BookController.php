@@ -3,30 +3,20 @@ namespace App\controllers;
 // session_start();
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use App\ValidateToken\ValidateToken;
-use App\Token\Token;
-
+use App\GetTokenFromDb\GetToken;
+use App\Token\GenToken;
 class BookController
 {
     public function __construct($bookModelObj, $conn)
     {
         $this->conn = $conn;
         $this->bookModelObj = $bookModelObj;
-        $this->valToken = new ValidateToken($conn);
-        $this->token = new Token();
+        $this->valToken = new GetToken($conn);
+        $this->token = new GenToken();
     }
 
     public function addBook(Request $request, Response $response)
     {
-        // $this->bookModelObj->addBook();
-        
-        // $isTokenValid = $this->valToken->getAndValidateToken();
-        // echo $this->valToken->getAndValidateToken($_SESSION['userLoggedInMobile']);
-        // die();
-        if( isset($_SESSION['userId']) && $_SESSION['userId'] != '') {
-            $userTokenDb = $this->valToken->getTokenFromDb($_SESSION['userId']);
-            if($userTokenDb == $_SESSION['userLoggedInToken']) {
-
                 
                     $params = $request->getParsedBody();
                 
@@ -61,31 +51,12 @@ class BookController
                     ->withStatus(200);
                     
                 }
-            } else {
-                $jsonMessage = array("isSuccess" => false,
-                "message" => "Invalid request, Token not matching");
-                $response->getBody()->write(json_encode($jsonMessage));
-                return $response
-                ->withHeader("content-type", "application/json")
-                ->withStatus(401);
-            }
-        } else {
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "User not logged in, please login first.");
-            $response->getBody()->write(json_encode($jsonMessage));
-            return $response
-            ->withHeader("content-type", "application/json")
-            ->withStatus(200);
-        }
+
 
     }
 
     public function editBook(Request $request, Response $response, $args)
     {
-        
-        if( isset($_SESSION['userId']) && $_SESSION['userId'] != '') {  
-        $userTokenDb = $this->valToken->getTokenFromDb($_SESSION['userId']);
-        if($userTokenDb == $_SESSION['userLoggedInToken']) {
 
         $bookId = (int)$args['bookId'];
 
@@ -125,124 +96,67 @@ class BookController
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
         }
-        } else {
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "Invalid request, Token not matching");
-            $response->getBody()->write(json_encode($jsonMessage));
-            return $response
-            ->withHeader("content-type", "application/json")
-            ->withStatus(401);
-
-        }
-        } else {
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "User not logged in, please login first.");
-            $response->getBody()->write(json_encode($jsonMessage));
-            return $response
-            ->withHeader("content-type", "application/json")
-            ->withStatus(200);
-        }
+        
 
     }
 
     public function deleteBook(Request $request, Response $response, $args)
     {
                 
-        if( isset($_SESSION['userId']) && $_SESSION['userId'] != '') {  
-            $userTokenDb = $this->valToken->getTokenFromDb($_SESSION['userId']);
-            if($userTokenDb == $_SESSION['userLoggedInToken']) {
-                    $bookId = (int)$args['bookId'];
-                    $dltBookRst = $this->bookModelObj->deleteBook($bookId);
-                    if($dltBookRst) {
-                        $jsonMessage = array("isSuccess" => true,
-                        "message" => "Book deleted successfully");
-                        $response->getBody()->write(json_encode($jsonMessage));
-                        return $response
-                        ->withHeader("content-type", "application/json")
-                        ->withStatus(200);
-                    } else {
-                        $jsonMessage = array("isSuccess" => false,
-                        "message" => "No book available with that id.");
-                        $response->getBody()->write(json_encode($jsonMessage));
-                        return $response
-                        ->withHeader("content-type", "application/json")
-                        ->withStatus(200);
-                    }
-                } else {
-                    $jsonMessage = array("isSuccess" => false,
-                    "message" => "Invalid request, Token not matching");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(401);
-
-                }
+        
+        $bookId = (int)$args['bookId'];
+        $dltBookRst = $this->bookModelObj->deleteBook($bookId);
+        if($dltBookRst) {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "Book deleted successfully");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
         } else {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "User not logged in, please login first.");
+            "message" => "No book available with that id.");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
         }
+
     }
 
     public function bookFeedback(Request $request, Response $response, $args)
     {
+
+        $bookId = $args['bookId'];
+        $bookExistsRst = $this->bookModelObj->checkBookExists($bookId);
         
-        if( isset($_SESSION['userId']) && $_SESSION['userId'] != '') {  
-        $userTokenDb = $this->valToken->getTokenFromDb($_SESSION['userId']);
-        if($userTokenDb == $_SESSION['userLoggedInToken']) {
+        if($bookExistsRst) {
+            $params = $request->getParsedBody();
+            $feedMessage = trim($params['message'] ?? '');
 
-            $bookId = $args['bookId'];
-            $bookExistsRst = $this->bookModelObj->checkBookExists($bookId);
-            
-            if($bookExistsRst) {
-                $params = $request->getParsedBody();
-                $feedMessage = trim($params['message'] ?? '');
-
-                $bookFeedRst = $this->bookModelObj->bookFeedback($_SESSION['userId'], $_SESSION['userName'], $feedMessage, $bookId);
-                if($bookFeedRst) {
-                    $jsonMessage = array("isSuccess" => true,
-                    "message" => "Feedback submitted.");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                }
-            } else {
-                $jsonMessage = array("isSuccess" => false,
-                "message" => "Book Doesn't exist.");
+            $bookFeedRst = $this->bookModelObj->bookFeedback($_SESSION['userId'], $_SESSION['userName'], $feedMessage, $bookId);
+            if($bookFeedRst) {
+                $jsonMessage = array("isSuccess" => true,
+                "message" => "Feedback submitted.");
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")
                 ->withStatus(200);
             }
-
         } else {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "Invalid request, Token not matching");
+            "message" => "Book Doesn't exist.");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(401);
+            ->withStatus(200);
+        }
 
-        }
-        } else {
-        $jsonMessage = array("isSuccess" => false,
-        "message" => "User not logged in, please login first.");
-        $response->getBody()->write(json_encode($jsonMessage));
-        return $response
-        ->withHeader("content-type", "application/json")
-        ->withStatus(200);
-        }
     }
 
     public function personalBooks(Request $request, Response $response)
     {
-        if( isset($_SESSION['userId']) && $_SESSION['userId'] != '') {  
-            $userTokenDb = $this->valToken->getTokenFromDb($_SESSION['userId']);
-            if($userTokenDb == $_SESSION['userLoggedInToken']) {
+
     
                 $personalBooks = $this->bookModelObj->getPersonalBooks($_SESSION['userId']);
                 if(count($personalBooks) > 0) {
@@ -261,67 +175,33 @@ class BookController
                     ->withHeader("content-type", "application/json")
                     ->withStatus(401);
                 }
-            } else {
-                $jsonMessage = array("isSuccess" => false,
-                "message" => "Invalid request, Token not matching");
-                $response->getBody()->write(json_encode($jsonMessage));
-                return $response
-                ->withHeader("content-type", "application/json")
-                ->withStatus(401);
-    
-            }
-            } else {
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "User not logged in, please login first.");
-            $response->getBody()->write(json_encode($jsonMessage));
-            return $response
-            ->withHeader("content-type", "application/json")
-            ->withStatus(200);
-            }
+
     }
 
     public function searchBook(Request $request, Response $response, $args)
     {
-        if( isset($_SESSION['userId']) && $_SESSION['userId'] != '') {  
-            $userTokenDb = $this->valToken->getTokenFromDb($_SESSION['userId']);
-            if($userTokenDb == $_SESSION['userLoggedInToken']) {
-    
-                $searchQry = $args['searchString'];
-                $searchRst = $this->bookModelObj->searchBook($searchQry);
-                if(count($searchRst) > 0) {
-                    $jsonMessage = array("isSuccess" => true,
-                    "message" => "List of searching books.",
-                    "books" => $searchRst);
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                } else {
-                    $jsonMessage = array("isSuccess" => true,
-                    "message" => "No books found.");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
 
-                }
-            } else {
-                $jsonMessage = array("isSuccess" => false,
-                "message" => "Invalid request, Token not matching");
-                $response->getBody()->write(json_encode($jsonMessage));
-                return $response
-                ->withHeader("content-type", "application/json")
-                ->withStatus(401);
     
-            }
-            } else {
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "User not logged in, please login first.");
+        $searchQry = $args['searchString'];
+        $searchRst = $this->bookModelObj->searchBook($searchQry);
+        if(count($searchRst) > 0) {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "List of searching books.",
+            "books" => $searchRst);
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
-            }
+        } else {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "No books found.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+
+        }
+
     }
 
 

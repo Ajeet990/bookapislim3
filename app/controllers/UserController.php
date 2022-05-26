@@ -3,8 +3,8 @@
 namespace App\controllers;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use App\ValidateToken\ValidateToken;
-use App\Token\Token;
+use App\GetTokenFromDb\GetToken;
+use App\Token\GenToken;
 
 // session_start();
 
@@ -14,9 +14,9 @@ class UserController
     public function __construct($userModelObj, $conn)
     {
         $this->conn = $conn;
-        $this->valToken = new ValidateToken($this->conn);
+        $this->valToken = new GetToken($this->conn);
         $this->userModelObj = $userModelObj;
-        $this->token = new Token();
+        $this->token = new GenToken();
     }
 
     public function checkEmailAndMobileExists($email, $mobile_no)
@@ -151,73 +151,46 @@ class UserController
 
     public function logOut(Request $request, Response $response)
     {
-        if(isset($_SESSION['userId']) && $_SESSION['userId'] != '') {
-            $removeTokenRst = $this->userModelObj->removeToken($_SESSION['userLoggedInMobile']);
-            if($removeTokenRst) {
-                unset($_SESSION['userLoggedInToken']);
-                unset($_SESSION['userLoggedInMobile']);
-                unset($_SESSION['userId']);
-                session_destroy();
-                $jsonMessage = array("isSuccess" => true,
-                "message" => "Logged Out successfully.");
-                $response->getBody()->write(json_encode($jsonMessage));
-                return $response
-                ->withHeader("content-type", "application/json")
-                ->withStatus(200);
-            }
-        } else {
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "User not logged in, please login first.");
+
+        $removeTokenRst = $this->userModelObj->removeToken($_SESSION['userLoggedInMobile']);
+        if($removeTokenRst) {
+            unset($_SESSION['userLoggedInToken']);
+            unset($_SESSION['userLoggedInMobile']);
+            unset($_SESSION['userId']);
+            session_destroy();
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "Logged Out successfully.");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
         }
+
     }
 
 
     public function updateProfile(Request $request, Response $response)
     {
-        if( isset($_SESSION['userId']) && $_SESSION['userId'] != '') {  
-            $userTokenDb = $this->valToken->getTokenFromDb($_SESSION['userId']);
-            if($userTokenDb == $_SESSION['userLoggedInToken']) {
         
-                $params = $request->getParsedBody();
-                $image = $_FILES['image'];
-                $img_name = $image['name'];
-                $img_path = $image['tmp_name'];
-                $dest = __DIR__."/../img/users/".$img_name;
-                move_uploaded_file($img_path, $dest);
+        $params = $request->getParsedBody();
+        $image = $_FILES['image'];
+        $img_name = $image['name'];
+        $img_path = $image['tmp_name'];
+        $dest = __DIR__."/../img/users/".$img_name;
+        move_uploaded_file($img_path, $dest);
 
-                $name = trim($params['name'] ?? '');
-                $address = trim($params['address'] ?? '');
-                $updateRst =  $this->userModelObj->updateProfile($dest, $name, $address, $_SESSION['userId']);
-                if($updateRst) {
-                    $jsonMessage = array("isSuccess" => true,
-                    "message" => "Profile updated Successfully.");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(401);
-                }
-
-                } else {
-                    $jsonMessage = array("isSuccess" => false,
-                    "message" => "Invalid request, Token not matching");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(401);
-        
-                }
-        } else {
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "User not logged in, please login first.");
+        $name = trim($params['name'] ?? '');
+        $address = trim($params['address'] ?? '');
+        $updateRst =  $this->userModelObj->updateProfile($dest, $name, $address, $_SESSION['userId']);
+        if($updateRst) {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "Profile updated Successfully.");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(200);
+            ->withStatus(401);
         }
+
     }
 
     

@@ -1,6 +1,6 @@
 <?php
-namespace App\ValidateToken;
-class ValidateToken
+namespace App\getTokenFromDb;
+class GetToken
 {
     public function __construct($conn)
     {
@@ -12,6 +12,7 @@ class ValidateToken
         $getToken = $this->conn->query("select token from register where id = '$userId'");
         $userToken = mysqli_fetch_assoc($getToken);
         return $userToken['token'];
+        // echo $userId;
 
     }
 }

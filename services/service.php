@@ -54,7 +54,7 @@ $container['RequestHelper'] = function($container) {
 
 //container for token generator
 $container['tokenGen'] = function($container) {
-    return new \App\Token\Token;
+    return new \App\Token\genToken;
 };
 
 

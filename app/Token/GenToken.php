@@ -4,7 +4,7 @@ namespace App\Token;
 use Slim\Csrf\Guard;
 
 
-class Token
+class genToken
 {
     public function __construct()
     {
@@ -15,7 +15,7 @@ class Token
         /* Init Response */
         $token = ["csrf_name" => "", "csrf_value" => ""];
 
-        $slimGuard = new Guard();
+        $slimGuard = new Guard;
 
         // $slimGuard->validateStorage();
         $csrfNameKey = $slimGuard->getTokenNameKey();
