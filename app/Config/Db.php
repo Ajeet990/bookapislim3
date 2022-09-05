@@ -8,14 +8,14 @@ class Db
 
     public function __construct()
     {
-        // $servername = "localhost";
-        // $username = "amn";
-        // $password = "N0p@sword";
-        // $dbname = "bookexchange";
         $servername = "localhost";
-        $username = "root";
-        $password = "";
-        $dbname = "bookapi";
+        $username = "amn";
+        $password = "N0p@sword";
+        $dbname = "bookexchange";
+        // $servername = "localhost";
+        // $username = "root";
+        // $password = "";
+        // $dbname = "bookapi";
 
         $this->conn = mysqli_connect($servername, $username, $password, $dbname);
     }
