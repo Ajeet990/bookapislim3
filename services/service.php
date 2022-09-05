@@ -3,7 +3,7 @@ use Slim\App;
 use App\Config\Db;
 use App\Model\Usermodel;
 use App\Model\Bookmodel;
-use App\Model\Requestmodelc
+use App\Model\Requestmodel;
 session_start();
 
 // use App\controllers\UserController;
@@ -11,9 +11,9 @@ session_start();
 
 $db = new Db();
 $conn = $db->getConnection();
-$userModelObj = new Usercodel($conn);
-$bookModelObj = new Bookcodel($conn);
-$requestModelObj = new Requestcodel($conn);
+$userModelObj = new Usermodel($conn);
+$bookModelObj = new Bookmodel($conn);
+$requestModelObj = new Requestmodel($conn);
 
 
 
