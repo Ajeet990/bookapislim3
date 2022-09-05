@@ -1,6 +1,6 @@
 <?php
 
-namespace App\config;
+namespace App\Config;
 
 class Db
 {
@@ -9,9 +9,9 @@ class Db
     public function __construct()
     {
         $servername = "localhost";
-        $username = "root";
-        $password = "";
-        $dbname = "bookapi";
+        $username = "amn";
+        $password = "N0p@sword";
+        $dbname = "bookexchange";
 
         $this->conn = mysqli_connect($servername, $username, $password, $dbname);
     }
