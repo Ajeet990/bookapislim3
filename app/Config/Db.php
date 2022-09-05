@@ -9,9 +9,9 @@ class Db
     public function __construct()
     {
         $servername = "localhost";
-        $username = "root";
-        $password = "Admin@123";
-        $dbname = "bookapi";
+        $username = "amn";
+        $password = "N0p@sword";
+        $dbname = "bookexchange";
 
         $this->conn = mysqli_connect($servername, $username, $password, $dbname);
     }
