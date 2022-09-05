@@ -1,9 +1,9 @@
 <?php
 use Slim\App;
 use App\Config\Db;
-use App\Model\UserModel;
-use App\Model\BookModel;
-use App\Model\RequestModel;
+use App\Model\Usermodel;
+use App\Model\Bookmodel;
+use App\Model\Requestmodelc
 session_start();
 
 // use App\controllers\UserController;
@@ -11,9 +11,9 @@ session_start();
 
 $db = new Db();
 $conn = $db->getConnection();
-$userModelObj = new UserModel($conn);
-$bookModelObj = new BookModel($conn);
-$requestModelObj = new RequestModel($conn);
+$userModelObj = new Usercodel($conn);
+$bookModelObj = new Bookcodel($conn);
+$requestModelObj = new Requestcodel($conn);
 
 
 
@@ -36,20 +36,20 @@ $container = $app->getContainer();
 $container['UserHelper'] = function($container) {
     global $userModelObj;
     global $conn;
-    return new \App\controllers\UserController($userModelObj, $conn);
+    return new \App\controllers\Usercontroller($userModelObj, $conn);
 };
 
 //container for bookController
 $container['BookHelper'] = function($container) {
     global $bookModelObj;
     global $conn;
-    return new \App\controllers\BookController($bookModelObj, $conn);
+    return new \App\controllers\Bookcontroller($bookModelObj, $conn);
 };
 //container for request related operations
 $container['RequestHelper'] = function($container) {
     global $requestModelObj;
     global $conn;
-    return new \App\controllers\RequestController($requestModelObj, $conn);
+    return new \App\controllers\Requestcontroller($requestModelObj, $conn);
 };
 
 //container for token generator
@@ -59,5 +59,5 @@ $container['tokenGen'] = function($container) {
 
 
 
-require __DIR__.'/../app/Routes.php';
+require __DIR__.'/../app/routes.php';
 

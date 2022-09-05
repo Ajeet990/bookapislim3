@@ -18,39 +18,39 @@ class BookController
     public function addBook(Request $request, Response $response)
     {
                 
-                    $params = $request->getParsedBody();
-                
-                    $bImage = $_FILES['bImage'];
-                    $img_name = $bImage['name'];
-                    $img_path = $bImage['tmp_name'];
-                    $bookDest = __DIR__."/../img/books/".$img_name;
-                    move_uploaded_file($img_path, $bookDest);
+        $params = $request->getParsedBody();
+    
+        $bImage = $_FILES['bImage'];
+        $img_name = $bImage['name'];
+        $img_path = $bImage['tmp_name'];
+        $bookDest = __DIR__."/../img/books/".$img_name;
+        move_uploaded_file($img_path, $bookDest);
 
-                    $bName = trim($params['bName'] ?? '');
-                    $bGenre = trim($params['bGenre'] ?? '');
-                    $bAuthor = trim($params['bAuthor'] ?? '');
-                    $edition = trim($params['edition'] ?? '');
-                    $description = trim($params['description'] ?? '');
+        $bName = trim($params['bName'] ?? '');
+        $bGenre = trim($params['bGenre'] ?? '');
+        $bAuthor = trim($params['bAuthor'] ?? '');
+        $edition = trim($params['edition'] ?? '');
+        $description = trim($params['description'] ?? '');
 
-                    $addBookRst = $this->bookModelObj->addBook($bName, $bookDest, $bGenre, $bAuthor, $edition, $description, $_SESSION['userId']);
-                    
-                    if($addBookRst){
-                        $jsonMessage = array("isSuccess" => true,
-                        "message" => "Book added Successfully",
-                    );
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                } else {
-                    $jsonMessage = array("isSuccess" => false,
-                    "message" => "Book not added");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                    
-                }
+        $addBookRst = $this->bookModelObj->addBook($bName, $bookDest, $bGenre, $bAuthor, $edition, $description, $_SESSION['userId']);
+        
+        if($addBookRst){
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "Book added Successfully",
+        );
+        $response->getBody()->write(json_encode($jsonMessage));
+        return $response
+        ->withHeader("content-type", "application/json")
+        ->withStatus(200);
+    } else {
+        $jsonMessage = array("isSuccess" => false,
+        "message" => "Book not added");
+        $response->getBody()->write(json_encode($jsonMessage));
+        return $response
+        ->withHeader("content-type", "application/json")
+        ->withStatus(200);
+        
+    }
 
 
     }
