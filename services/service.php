@@ -1,9 +1,9 @@
 <?php
 use Slim\App;
-use App\Config\Db;
-use App\Model\UserModel;
-use App\Model\BookModel;
-use App\Model\RequestModel;
+use App\config\Db;
+use App\model\UserModel;
+use App\model\BookModel;
+use App\model\RequestModel;
 session_start();
 
 // use App\controllers\UserController;
@@ -36,20 +36,20 @@ $container = $app->getContainer();
 $container['UserHelper'] = function($container) {
     global $userModelObj;
     global $conn;
-    return new \App\Controllers\UserController($userModelObj, $conn);
+    return new \App\controllers\UserController($userModelObj, $conn);
 };
 
 //container for bookController
 $container['BookHelper'] = function($container) {
     global $bookModelObj;
     global $conn;
-    return new \App\Controllers\BookController($bookModelObj, $conn);
+    return new \App\controllers\BookController($bookModelObj, $conn);
 };
 //container for request related operations
 $container['RequestHelper'] = function($container) {
     global $requestModelObj;
     global $conn;
-    return new \App\Controllers\RequestController($requestModelObj, $conn);
+    return new \App\controllers\RequestController($requestModelObj, $conn);
 };
 
 //container for token generator
@@ -59,5 +59,5 @@ $container['tokenGen'] = function($container) {
 
 
 
-require __DIR__.'/../app/Routes.php';
+require __DIR__.'/../app/routes.php';
 
