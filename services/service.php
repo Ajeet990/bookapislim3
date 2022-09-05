@@ -1,9 +1,9 @@
 <?php
 use Slim\App;
-use App\config\Db;
-use App\model\UserModel;
-use App\model\BookModel;
-use App\model\RequestModel;
+use App\Config\Db;
+use App\Model\UserModel;
+use App\Model\BookModel;
+use App\Model\RequestModel;
 session_start();
 
 // use App\controllers\UserController;
@@ -59,5 +59,5 @@ $container['tokenGen'] = function($container) {
 
 
 
-require __DIR__.'/../app/routes.php';
+require __DIR__.'/../app/Routes.php';
 
