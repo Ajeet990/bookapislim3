@@ -4,12 +4,8 @@ namespace App\Token;
 use Slim\Csrf\Guard;
 
 
-class genToken
+class GenToken
 {
-    public function __construct()
-    {
-        
-    }
     public function genCSRFTkn()
     {
         /* Init Response */

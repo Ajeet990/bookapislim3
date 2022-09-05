@@ -10,7 +10,10 @@ use App\Token\GenToken;
 
 class UserController
 {
-    private $val;
+    protected $conn;
+    protected $valToken;
+    protected $userModelObj;
+    protected $token;
     public function __construct($userModelObj, $conn)
     {
         $this->conn = $conn;
@@ -25,9 +28,9 @@ class UserController
         $num = mysqli_num_rows($valQry);
         if($num > 0)
         {
-            return true;
-        } else {
             return false;
+        } else {
+            return true;
         }
 
         // echo $email."-".$mobile_no;
@@ -64,7 +67,7 @@ class UserController
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
         $validation = $this->checkEmailAndMobileExists($email, $mobile_no);
-        if($validation == !true)
+        if($validation)
         {
             $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $dest);
             if($signUpRst) {
@@ -97,7 +100,6 @@ class UserController
     public function logIn(Request $request, Response $response)
     {
         if(!isset($_SESSION['userId'])) {
-
         $params = $request->getParsedBody();
         $mobile_no = trim($params['mobile_no'] ?? '');
         $password = trim($params['password'] ?? '');
@@ -106,20 +108,20 @@ class UserController
         if($loginRst)
         {
             if(password_verify($password, $loginRst[0])) {
-                    $tok_val = $this->token->genCSRFTkn();
-                    $this->userModelObj->addToken($mobile_no, $tok_val);
-                    $_SESSION['userLoggedInToken'] = $tok_val;
-                    $_SESSION['userLoggedInMobile'] = $mobile_no;
-                    $_SESSION['userId'] = $loginRst[1];
-                    $_SESSION['userName'] = $loginRst[2];
+                $tok_val = $this->token->genCSRFTkn();
+                $this->userModelObj->addToken($mobile_no, $tok_val);
+                $_SESSION['userLoggedInToken'] = $tok_val;
+                $_SESSION['userLoggedInMobile'] = $mobile_no;
+                $_SESSION['userId'] = $loginRst[1];
+                $_SESSION['userName'] = $loginRst[2];
 
-                    $jsonMessage = array("isSuccess" => true,
-                                            "message" => "Login Success",
-                                            "Token" => $tok_val);
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
+                $jsonMessage = array("isSuccess" => true,
+                                        "message" => "Login Success",
+                                        "Token" => $tok_val);
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(200);
             }
             else {
                     $jsonMessage = array("isSuccess" => false,
@@ -151,7 +153,6 @@ class UserController
 
     public function logOut(Request $request, Response $response)
     {
-
         $removeTokenRst = $this->userModelObj->removeToken($_SESSION['userLoggedInMobile']);
         if($removeTokenRst) {
             unset($_SESSION['userLoggedInToken']);
@@ -165,9 +166,7 @@ class UserController
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
         }
-
     }
-
 
     public function updateProfile(Request $request, Response $response)
     {
@@ -192,8 +191,4 @@ class UserController
         }
 
     }
-
-    
-
-
 }

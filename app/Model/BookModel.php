@@ -1,7 +1,8 @@
 <?php
-namespace App\model;
+namespace App\Model;
 class BookModel
 {
+    protected $conn;
     public function __construct($conn)
     {
         $this->conn = $conn;
@@ -32,10 +33,8 @@ class BookModel
     public function editBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $description, int $bookId)
     {
         $checkQry = $this->conn->query("select * from books where id = '$bookId'");
-        if(mysqli_num_rows($checkQry) > 0){
-
-            $updateQry = $this->conn->query("update books set book_name = '$bName', image = '$bookDest', genre = '$bGenre', author = '$bAuthor', edition = '$edition', description = '$description' where id = '$bookId'");
-            
+        if (mysqli_num_rows($checkQry) > 0) {
+            $updateQry = $this->conn->query("update books set book_name = '$bName', image = '$bookDest', genre = '$bGenre', author = '$bAuthor', edition = '$edition', description = '$description' where id = '$bookId'");           
             return true;
         } else {
             return false;
@@ -45,7 +44,7 @@ class BookModel
     public function deleteBook(int $bookId)
     {
         $checkQry = $this->conn->query("select * from books where id = '$bookId'");
-        if(mysqli_num_rows($checkQry) > 0){
+        if (mysqli_num_rows($checkQry) > 0) {
             $dltQry = $this->conn->query("DELETE from BOOKS where id = '$bookId'");
             return true;
         } else {
@@ -57,8 +56,7 @@ class BookModel
     public function bookFeedback($userId, $userName, $message, $bookId)
     {
         $insrtBookFeedback = $this->conn->query("insert into feedback(commenter_name, feedback, user_id, book_id) VALUES ('$userName', '$message', '$userId', '$bookId')");
-        // return true;
-        if($insrtBookFeedback) {
+        if ($insrtBookFeedback) {
             return true;
         } else {
             return false;
@@ -81,7 +79,6 @@ class BookModel
         $searchQry = $this->conn->query("select * from books where book_name LIKE '%$search%'");
         while($row = mysqli_fetch_assoc($searchQry)) {
             array_push($searchBooks, $row);
-
         }
         return $searchBooks;
     }

@@ -1,34 +1,25 @@
 <?php
 use Slim\App;
 use App\Config\Db;
-use App\Model\Usermodel;
-use App\Model\Bookmodel;
-use App\Model\Requestmodel;
+use App\Model\UserModel;
+use App\Model\BookModel;
+use App\Model\RequestModel;
 session_start();
 
-// use App\controllers\UserController;
-// use Slim\Csrf\Guard;
 
 $db = new Db();
 $conn = $db->getConnection();
-$userModelObj = new Usermodel($conn);
-$bookModelObj = new Bookmodel($conn);
-$requestModelObj = new Requestmodel($conn);
-
-
-
-// use \Psr\Http\Message\ServerRequestInterface as Request;
-// use \Psr\Http\Message\ResponseInterface as Response;
-
-// require __DIR__.'/../vendor/autoload.php';
+$userModelObj = new UserModel($conn);
+$bookModelObj = new BookModel($conn);
+$requestModelObj = new RequestModel($conn);
 
 $app = new App([
     'settings' => [
         'displayErrorDetails' => true,
-        ]
-    ]);
+    ]
+]);
     
-// $app->add(new \Slim\Csrf\Guard);
+
 $container = $app->getContainer();
 // Create Container
 
@@ -36,28 +27,25 @@ $container = $app->getContainer();
 $container['UserHelper'] = function($container) {
     global $userModelObj;
     global $conn;
-    return new \App\controllers\Usercontroller($userModelObj, $conn);
+    return new \App\controllers\UserController($userModelObj, $conn);
 };
 
 //container for bookController
 $container['BookHelper'] = function($container) {
     global $bookModelObj;
     global $conn;
-    return new \App\controllers\Bookcontroller($bookModelObj, $conn);
+    return new \App\controllers\BookController($bookModelObj, $conn);
 };
 //container for request related operations
 $container['RequestHelper'] = function($container) {
     global $requestModelObj;
     global $conn;
-    return new \App\controllers\Requestcontroller($requestModelObj, $conn);
+    return new \App\controllers\RequestController($requestModelObj, $conn);
 };
 
 //container for token generator
 $container['tokenGen'] = function($container) {
-    return new \App\Token\genToken;
+    return new \App\Token\GenToken;
 };
-
-
-
-require __DIR__.'/../app/routes.php';
+require __DIR__.'/../app/Routes.php';
 
