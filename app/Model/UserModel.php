@@ -1,9 +1,8 @@
 <?php
-namespace App\model;
+namespace App\Model;
 class UserModel
 {
-    private $conn;
-
+    protected $conn;
     public function __construct($conn)
     {
         $this->conn = $conn;
@@ -16,9 +15,7 @@ class UserModel
         while($row = mysqli_fetch_assoc($userQuery)) {
             array_push($listUser, $row);
         }
-        return $listUser;
-
-        
+        return $listUser;       
     }
 
     public function signUp($name, $mobile_no, $address, $email, $password, $dest)
@@ -30,15 +27,12 @@ class UserModel
     public function logIn(string $mobile_no,string $password)
     {
 
-        $loginQry = $this->conn->query("Select * from register where mobile_no = '$mobile_no'");
-        
+        $loginQry = $this->conn->query("Select * from register where mobile_no = '$mobile_no'");      
         $num = mysqli_num_rows($loginQry);
-        // echo $mobile_no."-".$password;
         if($num > 0)
         {
             $row = mysqli_fetch_assoc($loginQry);
             return [$row['password'], $row['id'], $row['user_name']];
-
         }
     }
 
@@ -53,7 +47,6 @@ class UserModel
     {
         $removeTokenRst = $this->conn->query("update register set token = '' where mobile_no = '$userMobile'");
         return true;
-
     }
 
     public function updateProfile(string $image, string $name,string $address,int $userId)

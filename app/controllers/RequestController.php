@@ -9,6 +9,10 @@ use App\Token\GenToken;
 
 class RequestController
 {
+    protected $conn;
+    protected $requestModelObj;
+    protected $valToken;
+    protected $token;
     public function __construct($requestModelObj, $conn)
     {
         $this->conn = $conn;

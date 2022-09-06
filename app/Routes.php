@@ -2,9 +2,9 @@
 use Slim\Http\Request;
 use Slim\Http\Response;
 use App\Middleware\AuthMiddleware;
+use Slim\App;
 
-// $mw = $app->get('/signUp', 'UserHelper:middle');
-//end points related to users.
+
 $app->get('/user', 'UserHelper:index');
 $app->get('/users', 'UserHelper:userList');
 $app->get('/tokenGen', 'tokenGen:genCSRFTkn');
@@ -32,7 +32,7 @@ $app->group('', function() use ($app) {
     $app->post('/cancelIssueRequest/{requestingId}', 'RequestHelper:cancelIssueRequest');
     $app->post('/returnBookRequest/{requestingId}', 'RequestHelper:returnBookRequest');
     $app->post('/grantReturnRequest/{requestingId}', 'RequestHelper:grantReturnRequest');
-})->add(new AuthMiddleware($container));
+})->add(new AuthMiddleware());
 
 
 

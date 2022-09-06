@@ -12,6 +12,10 @@ class Db
         $username = "amn";
         $password = "N0p@sword";
         $dbname = "bookexchange";
+        // $servername = "localhost";
+        // $username = "root";
+        // $password = "";
+        // $dbname = "bookapi";
 
         $this->conn = mysqli_connect($servername, $username, $password, $dbname);
     }

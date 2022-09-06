@@ -1,7 +1,8 @@
 <?php
-namespace App\getTokenFromDb;
+namespace App\GetTokenFromDb;
 class GetToken
 {
+    protected $conn;
     public function __construct($conn)
     {
         $this->conn = $conn;
@@ -12,7 +13,5 @@ class GetToken
         $getToken = $this->conn->query("select token from register where id = '$userId'");
         $userToken = mysqli_fetch_assoc($getToken);
         return $userToken['token'];
-        // echo $userId;
-
     }
 }

@@ -4,10 +4,12 @@ namespace App\Middleware;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use App\GetTokenFromDb\GetToken;
-use App\config\Db;
+use App\Config\Db;
 class AuthMiddleware
 {
-    private $getToken;
+    protected $getToken;
+    protected $con;
+    protected $conn;
 
     public function __construct()
     {
@@ -17,12 +19,9 @@ class AuthMiddleware
     }
     public function __invoke(Request $request, Response $response, $next)
     {
-
         if(isset($_SESSION['userId']) && $_SESSION['userId'] != '' && isset($_SESSION['userLoggedInToken'])) {
             $tokenFromDb = $this->getToken->getTokenFromDb($_SESSION['userId']);
-
             if($tokenFromDb == $_SESSION['userLoggedInToken']) {
-
                 $response = $next($request, $response);
                 return $response;
             } else {
@@ -33,7 +32,6 @@ class AuthMiddleware
                 ->withHeader("content-type", "application/json")
                 ->withStatus(401);
             }
-
         } else {
             $jsonMessage = array("isSuccess" => false,
             "message" => "User Not logged In, please logIn first");
@@ -42,6 +40,5 @@ class AuthMiddleware
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
         }
-
     }
 }

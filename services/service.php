@@ -6,8 +6,6 @@ use App\Model\BookModel;
 use App\Model\RequestModel;
 session_start();
 
-// use App\controllers\UserController;
-// use Slim\Csrf\Guard;
 
 $db = new Db();
 $conn = $db->getConnection();
@@ -15,20 +13,13 @@ $userModelObj = new UserModel($conn);
 $bookModelObj = new BookModel($conn);
 $requestModelObj = new RequestModel($conn);
 
-
-
-// use \Psr\Http\Message\ServerRequestInterface as Request;
-// use \Psr\Http\Message\ResponseInterface as Response;
-
-// require __DIR__.'/../vendor/autoload.php';
-
 $app = new App([
     'settings' => [
         'displayErrorDetails' => true,
-        ]
-    ]);
+    ]
+]);
     
-// $app->add(new \Slim\Csrf\Guard);
+
 $container = $app->getContainer();
 // Create Container
 
@@ -54,10 +45,7 @@ $container['RequestHelper'] = function($container) {
 
 //container for token generator
 $container['tokenGen'] = function($container) {
-    return new \App\Token\genToken;
+    return new \App\Token\GenToken;
 };
-
-
-
 require __DIR__.'/../app/Routes.php';
 

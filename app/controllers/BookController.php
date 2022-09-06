@@ -5,8 +5,14 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use App\GetTokenFromDb\GetToken;
 use App\Token\GenToken;
+use App\Config\Db;
+
 class BookController
 {
+    protected $conn;
+    protected $bookModelObj;
+    protected $valToken;
+    protected $token;
     public function __construct($bookModelObj, $conn)
     {
         $this->conn = $conn;
@@ -16,68 +22,56 @@ class BookController
     }
 
     public function addBook(Request $request, Response $response)
-    {
-                
-                    $params = $request->getParsedBody();
-                
-                    $bImage = $_FILES['bImage'];
-                    $img_name = $bImage['name'];
-                    $img_path = $bImage['tmp_name'];
-                    $bookDest = __DIR__."/../img/books/".$img_name;
-                    move_uploaded_file($img_path, $bookDest);
+    {              
+        $params = $request->getParsedBody();   
+        $bImage = $_FILES['bImage'];
+        $img_name = $bImage['name'];
+        $img_path = $bImage['tmp_name'];
+        $bookDest = __DIR__."/../img/books/".$img_name;
+        move_uploaded_file($img_path, $bookDest);
+        $bName = trim($params['bName'] ?? '');
+        $bGenre = trim($params['bGenre'] ?? '');
+        $bAuthor = trim($params['bAuthor'] ?? '');
+        $edition = trim($params['edition'] ?? '');
+        $description = trim($params['description'] ?? '');
 
-                    $bName = trim($params['bName'] ?? '');
-                    $bGenre = trim($params['bGenre'] ?? '');
-                    $bAuthor = trim($params['bAuthor'] ?? '');
-                    $edition = trim($params['edition'] ?? '');
-                    $description = trim($params['description'] ?? '');
-
-                    $addBookRst = $this->bookModelObj->addBook($bName, $bookDest, $bGenre, $bAuthor, $edition, $description, $_SESSION['userId']);
-                    
-                    if($addBookRst){
-                        $jsonMessage = array("isSuccess" => true,
-                        "message" => "Book added Successfully",
-                    );
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                } else {
-                    $jsonMessage = array("isSuccess" => false,
-                    "message" => "Book not added");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                    
-                }
-
-
+        $addBookRst = $this->bookModelObj->addBook($bName, $bookDest, $bGenre, $bAuthor, $edition, $description, $_SESSION['userId']);
+        
+        if ($addBookRst) {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "Book added Successfully",
+        );
+        $response->getBody()->write(json_encode($jsonMessage));
+        return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "Book not added");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(200);
+        }
     }
 
     public function editBook(Request $request, Response $response, $args)
     {
-
         $bookId = (int)$args['bookId'];
-
         $checkBookExists = $this->bookModelObj->checkBookExists($bookId);
-        if($checkBookExists) {
-            $params = $request->getParsedBody();
-            
+        if ($checkBookExists) {
+            $params = $request->getParsedBody();      
             $bImage = $_FILES['bImage'];
             $img_name = $bImage['name'];
             $img_path = $bImage['tmp_name'];
             $bookDest = __DIR__."/../img/books/".$img_name;
             move_uploaded_file($img_path, $bookDest);
-
             $bName = trim($params['bName'] ?? '');
             $bGenre = trim($params['bGenre'] ?? '');
             $bAuthor = trim($params['bAuthor'] ?? '');
             $edition = (int)trim($params['bEdition'] ?? '');
             $description = trim($params['description'] ?? '');
-
             $editRst = $this->bookModelObj->editBook($bName, $bookDest, $bGenre, $bAuthor, $edition, $description, $bookId);
-
             if($editRst) {
                 $jsonMessage = array("isSuccess" => true,
                                     "message" => "Book Updated");
@@ -86,8 +80,6 @@ class BookController
                 ->withHeader("content-type", "application/json")
                 ->withStatus(200);
             }
-
-
         } else {
             $jsonMessage = array("isSuccess" => false,
                                 "message" => "Book Not avalable");
@@ -96,15 +88,11 @@ class BookController
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
         }
-        
-
     }
 
     public function deleteBook(Request $request, Response $response, $args)
-    {
-                
-        
-        $bookId = (int)$args['bookId'];
+    {                 
+        $bookId = (int) $args['bookId'];
         $dltBookRst = $this->bookModelObj->deleteBook($bookId);
         if($dltBookRst) {
             $jsonMessage = array("isSuccess" => true,
@@ -156,26 +144,23 @@ class BookController
 
     public function personalBooks(Request $request, Response $response)
     {
-
-    
-                $personalBooks = $this->bookModelObj->getPersonalBooks($_SESSION['userId']);
-                if(count($personalBooks) > 0) {
-                    $jsonMessage = array("isSuccess" => true,
-                                            "message" => "My books",
-                                            "books" => $personalBooks);
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(401);
-                } else {
-                    $jsonMessage = array("isSuccess" => false,
-                    "message" => "No personal books");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(401);
-                }
-
+        $personalBooks = $this->bookModelObj->getPersonalBooks($_SESSION['userId']);
+        if (count($personalBooks) > 0) {
+            $jsonMessage = array("isSuccess" => true,
+                                    "message" => "My books",
+                                    "books" => $personalBooks);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(401);
+        } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "No personal books");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(401);
+        }
     }
 
     public function searchBook(Request $request, Response $response, $args)
