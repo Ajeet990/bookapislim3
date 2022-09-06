@@ -5,7 +5,6 @@ use App\Middleware\AuthMiddleware;
 use Slim\App;
 
 
-$app->get('/user', 'UserHelper:index');
 $app->get('/users', 'UserHelper:userList');
 $app->get('/tokenGen', 'tokenGen:genCSRFTkn');
 $app->post('/signUp', 'UserHelper:signUp');
