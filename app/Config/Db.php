@@ -8,7 +8,7 @@ class Db
 
     public function __construct()
     {
-        $servername = "localhost";
+        $servername = "127.0.0.1";
         $username = "amn";
         $password = "N0p@sword";
         $dbname = "bookexchange";
