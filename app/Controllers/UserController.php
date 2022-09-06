@@ -169,6 +169,10 @@ class UserController
     }
 
     public function index(){
+	$file = file("/var/log/apache2/domains/bookexchange.oidea.xyz.error.log");
+	for ($i = max(0, count($file)-6); $i < count($file); $i++) {
+  		echo $file[$i] . "\n";
+	}
    	echo "Index Working";
     }
     public function updateProfile(Request $request, Response $response)
