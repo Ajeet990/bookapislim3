@@ -27,20 +27,20 @@ $container = $app->getContainer();
 $container['UserHelper'] = function($container) {
     global $userModelObj;
     global $conn;
-    return new \App\controllers\UserController($userModelObj, $conn);
+    return new \App\Controllers\UserController($userModelObj, $conn);
 };
 
 //container for bookController
 $container['BookHelper'] = function($container) {
     global $bookModelObj;
     global $conn;
-    return new \App\controllers\BookController($bookModelObj, $conn);
+    return new \App\Controllers\BookController($bookModelObj, $conn);
 };
 //container for request related operations
 $container['RequestHelper'] = function($container) {
     global $requestModelObj;
     global $conn;
-    return new \App\controllers\RequestController($requestModelObj, $conn);
+    return new \App\Controllers\RequestController($requestModelObj, $conn);
 };
 
 //container for token generator
