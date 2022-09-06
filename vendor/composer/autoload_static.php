@@ -23,10 +23,6 @@ class ComposerStaticInit6f1564ca61f88ee7a2dfbbf931a8badf
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Container\\' => 14,
         ),
-        'I' => 
-        array (
-            'Interop\\Container\\' => 18,
-        ),
         'F' => 
         array (
             'FastRoute\\' => 10,
@@ -53,10 +49,6 @@ class ComposerStaticInit6f1564ca61f88ee7a2dfbbf931a8badf
         'Psr\\Container\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
-        ),
-        'Interop\\Container\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/container-interop/container-interop/src/Interop/Container',
         ),
         'FastRoute\\' => 
         array (
