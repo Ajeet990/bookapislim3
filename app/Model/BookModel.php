@@ -19,17 +19,6 @@ class BookModel
         }
     }
 
-    public function checkBookExists(int $bookId)
-    {
-        $checkQry = $this->conn->query("select * from books where id = '$bookId'");
-        if(mysqli_num_rows($checkQry) > 0)
-        {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public function editBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $description, int $bookId)
     {
         $checkQry = $this->conn->query("select * from books where id = '$bookId'");
