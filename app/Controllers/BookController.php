@@ -31,7 +31,6 @@ class BookController
                 $img_name = $bImage['name'];
                 $img_path = $bImage['tmp_name'];
                 $bookDest = __DIR__."/../img/books/".$img_name;
-                move_uploaded_file($img_path, $bookDest);
             } else {
                 $jsonMessage = array("isSuccess" => false,
                 "message" => "Please upload only image for book.");
@@ -48,26 +47,26 @@ class BookController
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
         }
-
+        
         $bName = trim($params['bName'] ?? '');
         $bGenre = trim($params['bGenre'] ?? '');
         $bAuthor = trim($params['bAuthor'] ?? '');
         $edition = trim($params['edition'] ?? '');
         $description = trim($params['description'] ?? '');
-
+        
         $addBookRst = $this->bookModelObj->addBook($bName, $bookDest, $bGenre, $bAuthor, $edition, $description, $_SESSION['userId']);
         
         if ($addBookRst) {
+            move_uploaded_file($img_path, $bookDest);
             $jsonMessage = array("isSuccess" => true,
-            "message" => "Book added Successfully",
-        );
-        $response->getBody()->write(json_encode($jsonMessage));
-        return $response
-            ->withHeader("content-type", "application/json")
-            ->withStatus(200);
+            "message" => "Book added Successfully");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(200);
         } else {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "Book not added");
+            "message" => "Failed.... something error occured.");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
                 ->withHeader("content-type", "application/json")
@@ -86,7 +85,6 @@ class BookController
                 $img_name = $bImage['name'];
                 $img_path = $bImage['tmp_name'];
                 $bookDest = __DIR__."/../img/books/".$img_name;
-                move_uploaded_file($img_path, $bookDest);
             } else {
                 $jsonMessage = array("isSuccess" => false,
                 "message" => "Please upload only image for book.");
@@ -110,12 +108,20 @@ class BookController
         $description = trim($params['description'] ?? '');
         $editRst = $this->bookModelObj->editBook($bName, $bookDest, $bGenre, $bAuthor, $edition, $description, $bookId);
         if($editRst) {
+            move_uploaded_file($img_path, $bookDest);
             $jsonMessage = array("isSuccess" => true,
                                 "message" => "Book Updated");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
+        } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => " Failed.... Something error occured.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(500);
         }
 
     }

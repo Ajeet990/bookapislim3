@@ -56,7 +56,16 @@ class UserController
         $email = trim($params['email'] ?? '');
         $password = trim($params['password'] ?? '');
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            
+        
+        if (strlen($mobile_no) != 10) {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "Mobile number should be of 10 digits.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        }
+
         $validation = $this->checkEmailAndMobileExists($email, $mobile_no);
         if ($validation) {
             if (isset($_FILES['image']) && strlen($_FILES['image']['name']) != 0) {
@@ -66,7 +75,6 @@ class UserController
                     $img_name = $image['name'];
                     $img_path = $image['tmp_name'];
                     $dest = __DIR__."/../img/users/".$img_name;
-                    move_uploaded_file($img_path, $dest);
                 } else {
                     $jsonMessage = array("isSuccess" => false,
                     "message" => "Please upload only image for user.");
@@ -83,9 +91,10 @@ class UserController
                 ->withHeader("content-type", "application/json")
                 ->withStatus(200);
             }
-
+            
             $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $dest);
-            if($signUpRst) {
+            if ($signUpRst) {
+                move_uploaded_file($img_path, $dest);
                 $tok_val = $this->token->genCSRFTkn();
                 $jsonMessage = array("isSuccess" => true,
                 "message" => "Registration success",
@@ -96,7 +105,7 @@ class UserController
                 ->withStatus(200);
             } else {
                 $jsonMessage = array("isSuccess" => false,
-                "message" => "Something error occred.");
+                "message" => "Something error occured.");
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")

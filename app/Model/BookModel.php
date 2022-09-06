@@ -8,7 +8,7 @@ class BookModel
         $this->conn = $conn;
     }
 
-    public function addBook(string $bName,string $bookDest,string $bGenre, string $bAuthor,int $edition,string $description, int $ownerId)
+    public function addBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $description, int $ownerId)
     {
         $addBookQry = $this->conn->query("INSERT INTO `books` (`book_name`, `image`, `genre`, `author`, `edition`, `description`, `owner_id`) VALUES ('$bName', '$bookDest', '$bGenre', '$bAuthor', '$edition', '$description','$ownerId')");
 
@@ -21,9 +21,8 @@ class BookModel
 
     public function editBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $description, int $bookId)
     {
-        $checkQry = $this->conn->query("select * from books where id = '$bookId'");
-        if (mysqli_num_rows($checkQry) > 0) {
-            $updateQry = $this->conn->query("update books set book_name = '$bName', image = '$bookDest', genre = '$bGenre', author = '$bAuthor', edition = '$edition', description = '$description' where id = '$bookId'");           
+        $updateQry = $this->conn->query("update books set book_name = '$bName', image = '$bookDest', genre = '$bGenre', author = '$bAuthor', edition = '$edition', description = '$description' where id = '$bookId'");
+        if ($updateQry) {         
             return true;
         } else {
             return false;

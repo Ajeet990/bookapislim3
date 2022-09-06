@@ -18,10 +18,15 @@ class UserModel
         return $listUser;       
     }
 
-    public function signUp($name, $mobile_no, $address, $email, $password, $dest)
+    public function signUp(string $name, string $mobile_no, string $address, string $email, string $password, string $dest)
     {
         $registerQry = $this->conn->query("INSERT INTO `register` (`image`,`user_name`, `mobile_no`, `address`, `email`, `password`) VALUES ('$dest','$name', '$mobile_no', '$address', '$email', '$password')");
-        return $registerQry;
+        if ($registerQry) {
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
     public function logIn(string $mobile_no,string $password)
