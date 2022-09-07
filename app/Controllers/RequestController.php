@@ -58,7 +58,7 @@ class RequestController
                     ->withHeader("content-type", "application/json")
                     ->withStatus(200);
                 } else {
-                    $jsonMessage = array("isSuccess" => false,
+                    $jsonMessage = array("isSuccess" => true,
                     "message" => "No new requests.");
                     $response->getBody()->write(json_encode($jsonMessage));
                     return $response
@@ -81,7 +81,7 @@ class RequestController
                     ->withHeader("content-type", "application/json")
                     ->withStatus(401);
                 } else {
-                    $jsonMessage = array("isSuccess" => false,
+                    $jsonMessage = array("isSuccess" => true,
                     "message" => "No requests done till now.");
                     $response->getBody()->write(json_encode($jsonMessage));
                     return $response
@@ -93,63 +93,55 @@ class RequestController
     }
 
     public function grantIssueRequest(Request $request, Response $response, $args)
-    {
-
-    
-                $requestingId = $args['requestingId'];
-                $Date = date("Y-m-d");
-                $grantRequestResult = $this->requestModelObj->grantIssueRequest($requestingId, $Date);
-                if($grantRequestResult) {
-                    $jsonMessage = array("isSuccess" => true,
-                    "message" => "Issued Book Successfully.");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(401);
-                }
-
+    { 
+        $requestingId = $args['requestingId'];
+        $Date = date("Y-m-d");
+        $grantRequestResult = $this->requestModelObj->grantIssueRequest($requestingId, $Date);
+        if($grantRequestResult) {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "Issued Book Successfully.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(401);
+        }
     }
 
     public function cancelIssueRequest(Request $request, Response $response, $args)
-    {
-
-    
-                $requestingId = (int) $args['requestingId'];
-                $params = $request->getParsedBody();
-                $cancelMessage = trim($params['message'] ?? '');
-                $cancelIssueRequest = $this->requestModelObj->cancelIssueRequest($requestingId, $cancelMessage);
-                if($cancelIssueRequest) {
-                    $jsonMessage = array("isSuccess" => true,
-                    "message" => "Book cancelled successfully.");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(401);
-                }
-
+    { 
+        $requestingId = (int) $args['requestingId'];
+        $params = $request->getParsedBody();
+        $cancelMessage = trim($params['message'] ?? '');
+        $cancelIssueRequest = $this->requestModelObj->cancelIssueRequest($requestingId, $cancelMessage);
+        if($cancelIssueRequest) {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "Book cancelled successfully.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(401);
+        }
     }
 
     public function returnBookRequest(Request $request, Response $response, $args)
     {
-
-                $requestingId = (int) $args['requestingId'];
-                $returnRst = $this->requestModelObj->returnBookRequest($requestingId);
-                if($returnRst) {
-                    $jsonMessage = array("isSuccess" => true,
-                    "message" => "Book return request sent successfully.");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                } else {
-                    $jsonMessage = array("isSuccess" => true,
-                    "message" => "Book not issued.");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                }
-
+        $requestingId = (int) $args['requestingId'];
+        $returnRst = $this->requestModelObj->returnBookRequest($requestingId);
+        if($returnRst) {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "Book return request sent successfully.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        } else {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "Book not issued.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        }
     }
 
     public function grantReturnRequest(Request $request, Response $response, $args)

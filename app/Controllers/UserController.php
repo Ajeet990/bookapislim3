@@ -26,8 +26,7 @@ class UserController
     {
         $valQry = $this->conn->query("select * from register where email = '$email' or mobile_no = '$mobile_no'");
         $num = mysqli_num_rows($valQry);
-        if($num > 0)
-        {
+        if ($num > 0) {
             return false;
         } else {
             return true;
@@ -77,7 +76,7 @@ class UserController
                     $dest = __DIR__."/../img/users/".$img_name;
                 } else {
                     $jsonMessage = array("isSuccess" => false,
-                    "message" => "Please upload only image for user.");
+                    "message" => "Only images are allowed.");
                     $response->getBody()->write(json_encode($jsonMessage));
                     return $response
                     ->withHeader("content-type", "application/json")
@@ -111,6 +110,7 @@ class UserController
                 ->withHeader("content-type", "application/json")
                 ->withStatus(500);
             }
+            
         } else {
             $jsonMessage = array("isSuccess" => false,
             "message" => "Phone or Email already exists.");
@@ -121,10 +121,6 @@ class UserController
         }       
     }
 
-
-
-
-
     public function logIn(Request $request, Response $response)
     {
         if(!isset($_SESSION['userId'])) {
@@ -133,9 +129,8 @@ class UserController
         $password = trim($params['password'] ?? '');
 
         $loginRst = $this->userModelObj->logIn($mobile_no, $password);
-        if($loginRst)
-        {
-            if(password_verify($password, $loginRst[0])) {
+        if ($loginRst) {
+            if (password_verify($password, $loginRst[0])) {
                 $tok_val = $this->token->genCSRFTkn();
                 $this->userModelObj->addToken($mobile_no, $tok_val);
                 $_SESSION['userLoggedInToken'] = $tok_val;
@@ -150,8 +145,7 @@ class UserController
                 return $response
                 ->withHeader("content-type", "application/json")
                 ->withStatus(200);
-            }
-            else {
+            } else {
                     $jsonMessage = array("isSuccess" => false,
                                         "message" => "Login Failed. Password doesn't match");
                     $response->getBody()->write(json_encode($jsonMessage));

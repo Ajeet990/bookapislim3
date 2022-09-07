@@ -8,18 +8,34 @@ class BookModel
         $this->conn = $conn;
     }
 
-    public function addBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $description, int $ownerId)
+    public function listAllBooks() : array
     {
-        $addBookQry = $this->conn->query("INSERT INTO `books` (`book_name`, `image`, `genre`, `author`, `edition`, `description`, `owner_id`) VALUES ('$bName', '$bookDest', '$bGenre', '$bAuthor', '$edition', '$description','$ownerId')");
+        $bookLists = $this->conn->query("SELECT * from books");
+        // if ($bookLists) {
+        //     return true;
+        // } else {
+        //     return false;
+        // }
+        $bList = [];
+        while ($book = mysqli_fetch_assoc($bookLists)) {
+            array_push($bList, $book);
 
-        if($addBookQry) {
+        }
+        return $bList;
+    }
+
+    public function addBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $description, int $ownerId) : bool
+    {
+        $addBookQry = $this->conn->query("INSERT INTO books (book_name, image, genre, author, edition, description, owner_id) VALUES ('$bName', '$bookDest', '$bGenre', '$bAuthor', '$edition', '$description','$ownerId')");
+
+        if ($addBookQry) {
             return true;
         } else {
             return false;
         }
     }
 
-    public function editBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $description, int $bookId)
+    public function editBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $description, int $bookId) : bool
     {
         $updateQry = $this->conn->query("update books set book_name = '$bName', image = '$bookDest', genre = '$bGenre', author = '$bAuthor', edition = '$edition', description = '$description' where id = '$bookId'");
         if ($updateQry) {         

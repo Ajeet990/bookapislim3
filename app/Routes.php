@@ -9,6 +9,7 @@ $app->get('/users', 'UserHelper:userList');
 $app->get('/tokenGen', 'tokenGen:genCSRFTkn');
 $app->post('/signUp', 'UserHelper:signUp');
 $app->post('/logIn', 'UserHelper:logIn');
+$app->get('/bookList', 'BookHelper:listAllBooks');
 
 $app->group('', function() use ($app) {
 

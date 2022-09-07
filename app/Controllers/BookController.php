@@ -21,6 +21,27 @@ class BookController
         $this->token = new GenToken();
     }
 
+    public function listAllBooks(Request $request, Response $response)
+    {
+        $bookLists = $this->bookModelObj->listAllBooks();
+        if ($bookLists) {
+            $jsonMessage = array("isSuccess" => true,
+                                    "message" => "List of books",
+                                    "list" => $bookLists);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(200);
+        } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "Something went wrong.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(500);
+        }
+    }
+
     public function addBook(Request $request, Response $response)
     {   
         if (isset($_FILES['bImage']) && strlen($_FILES['bImage']['name']) != 0) {
@@ -33,7 +54,7 @@ class BookController
                 $bookDest = __DIR__."/../img/books/".$img_name;
             } else {
                 $jsonMessage = array("isSuccess" => false,
-                "message" => "Please upload only image for book.");
+                "message" => "Only images are allowed.");
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")

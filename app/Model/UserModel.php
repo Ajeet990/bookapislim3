@@ -20,18 +20,16 @@ class UserModel
 
     public function signUp(string $name, string $mobile_no, string $address, string $email, string $password, string $dest)
     {
-        $registerQry = $this->conn->query("INSERT INTO `register` (`image`,`user_name`, `mobile_no`, `address`, `email`, `password`) VALUES ('$dest','$name', '$mobile_no', '$address', '$email', '$password')");
-        if ($registerQry) {
+        $sql = "INSERT INTO register (image, user_name, mobile_no, address, email, password) VALUES ('$dest', '$name', '$mobile_no', '$address', '$email', '$password')";
+        if ($this->conn->query($sql) === true) {
             return true;
         } else {
             return false;
         }
-
     }
 
     public function logIn(string $mobile_no,string $password)
     {
-
         $loginQry = $this->conn->query("Select * from register where mobile_no = '$mobile_no'");      
         $num = mysqli_num_rows($loginQry);
         if($num > 0)
