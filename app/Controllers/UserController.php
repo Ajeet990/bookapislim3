@@ -49,11 +49,11 @@ class UserController
     {
         $params = $request->getParsedBody();
                                 
-        $name = trim($params['name'] ?? '');
-        $mobile_no = trim($params['mobile_no'] ?? '');
-        $address = trim($params['address'] ?? '');
-        $email = trim($params['email'] ?? '');
-        $password = trim($params['password'] ?? '');
+        $name = mysqli_real_escape_string($this->conn, trim($params['name'] ?? ''));
+        $mobile_no = mysqli_real_escape_string($this->conn, trim($params['mobile_no'] ?? ''));
+        $address = mysqli_real_escape_string($this->conn, trim($params['address'] ?? ''));
+        $email = mysqli_real_escape_string($this->conn, trim($params['email'] ?? ''));
+        $password = mysqli_real_escape_string($this->conn, trim($params['password'] ?? ''));
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         
         if (strlen($mobile_no) != 10) {
@@ -73,7 +73,26 @@ class UserController
                     $image = $_FILES['image'];
                     $img_name = $image['name'];
                     $img_path = $image['tmp_name'];
-                    $dest = __DIR__."/../img/users/".$img_name;
+                    $dest = mysqli_real_escape_string($this->conn, __DIR__."/../img/users/".$img_name);
+                    $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $dest);
+                    if ($signUpRst) {
+                        move_uploaded_file($img_path, $dest);
+                        $tok_val = $this->token->genCSRFTkn();
+                        $jsonMessage = array("isSuccess" => true,
+                        "message" => "Registration success",
+                        "Token" => $tok_val);
+                        $response->getBody()->write(json_encode($jsonMessage));
+                        return $response
+                        ->withHeader("content-type", "application/json")
+                        ->withStatus(200);
+                    } else {
+                        $jsonMessage = array("isSuccess" => false,
+                        "message" => "Something error occured.");
+                        $response->getBody()->write(json_encode($jsonMessage));
+                        return $response
+                        ->withHeader("content-type", "application/json")
+                        ->withStatus(500);
+                    }
                 } else {
                     $jsonMessage = array("isSuccess" => false,
                     "message" => "Only images are allowed.");
@@ -89,26 +108,6 @@ class UserController
                 return $response
                 ->withHeader("content-type", "application/json")
                 ->withStatus(200);
-            }
-            
-            $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $dest);
-            if ($signUpRst) {
-                move_uploaded_file($img_path, $dest);
-                $tok_val = $this->token->genCSRFTkn();
-                $jsonMessage = array("isSuccess" => true,
-                "message" => "Registration success",
-                "Token" => $tok_val);
-                $response->getBody()->write(json_encode($jsonMessage));
-                return $response
-                ->withHeader("content-type", "application/json")
-                ->withStatus(200);
-            } else {
-                $jsonMessage = array("isSuccess" => false,
-                "message" => "Something error occured.");
-                $response->getBody()->write(json_encode($jsonMessage));
-                return $response
-                ->withHeader("content-type", "application/json")
-                ->withStatus(500);
             }
             
         } else {

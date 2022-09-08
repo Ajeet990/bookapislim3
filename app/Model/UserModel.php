@@ -20,9 +20,16 @@ class UserModel
 
     public function signUp(string $name, string $mobile_no, string $address, string $email, string $password, string $dest)
     {
+        $last_id = 0;
         $sql = "INSERT INTO register (image, user_name, mobile_no, address, email, password) VALUES ('$dest', '$name', '$mobile_no', '$address', '$email', '$password')";
         if ($this->conn->query($sql) === true) {
-            return true;
+            $last_id = $this->conn->insert_id;
+            if ($last_id > 0) {
+                return true;
+            } else {
+                return false;
+            }
+            
         } else {
             return false;
         }
