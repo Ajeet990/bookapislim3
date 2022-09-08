@@ -73,8 +73,11 @@ class UserController
                     $image = $_FILES['image'];
                     $img_name = $image['name'];
                     $img_path = $image['tmp_name'];
+                    $status = 'active';
+                    $token = '';
+                    $userType = 0;// 0 for normal usr
                     $dest = mysqli_real_escape_string($this->conn, __DIR__."/../img/users/".$img_name);
-                    $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $dest);
+                    $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $dest, $status, $token, $userType);
                     if ($signUpRst) {
                         move_uploaded_file($img_path, $dest);
                         $tok_val = $this->token->genCSRFTkn();

@@ -18,10 +18,19 @@ class UserModel
         return $listUser;       
     }
 
-    public function signUp(string $name, string $mobile_no, string $address, string $email, string $password, string $dest)
-    {
+    public function signUp(
+        string $name,
+        string $mobile_no,
+        string $address,
+        string $email,
+        string $password,
+        string $dest,
+        string $status,
+        string $token,
+        int $userType
+    ) {
         $last_id = 0;
-        $sql = "INSERT INTO register (image, user_name, mobile_no, address, email, password) VALUES ('$dest', '$name', '$mobile_no', '$address', '$email', '$password')";
+        $sql = "INSERT INTO register (image, user_name, mobile_no, address, email, password, status, token, user_type) VALUES ('$dest', '$name', '$mobile_no', '$address', '$email', '$password', '$status', '$token', '$userType')";
         if ($this->conn->query($sql) === true) {
             $last_id = $this->conn->insert_id;
             if ($last_id > 0) {
