@@ -11,15 +11,9 @@ class BookModel
     public function listAllBooks() : array
     {
         $bookLists = $this->conn->query("SELECT * from books");
-        // if ($bookLists) {
-        //     return true;
-        // } else {
-        //     return false;
-        // }
         $bList = [];
         while ($book = mysqli_fetch_assoc($bookLists)) {
             array_push($bList, $book);
-
         }
         return $bList;
     }
@@ -45,7 +39,7 @@ class BookModel
         }
     }
 
-    public function deleteBook(int $bookId)
+    public function deleteBook(int $bookId) :bool
     {
         $checkQry = $this->conn->query("select * from books where id = '$bookId'");
         if (mysqli_num_rows($checkQry) > 0) {
@@ -57,7 +51,7 @@ class BookModel
     }
 
 
-    public function bookFeedback($userId, $userName, $message, $bookId)
+    public function bookFeedback($userId, $userName, $message, $bookId) : bool
     {
         $insrtBookFeedback = $this->conn->query("insert into feedback(commenter_name, feedback, user_id, book_id) VALUES ('$userName', '$message', '$userId', '$bookId')");
         if ($insrtBookFeedback) {

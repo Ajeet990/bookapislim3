@@ -2,6 +2,10 @@
 namespace App\Model;
 class UserModel
 {
+    public const STATUS = 'active';
+    public const TOKEN = '';
+    public const USER_TYPE = 0; //for normal user
+
     protected $conn;
     public function __construct($conn)
     {
@@ -24,12 +28,12 @@ class UserModel
         string $address,
         string $email,
         string $password,
-        string $dest,
-        string $status,
-        string $token,
-        int $userType
+        string $dest
     ) {
         $last_id = 0;
+        $status = UserModel::STATUS;
+        $token = UserModel::TOKEN;
+        $userType = UserModel::USER_TYPE;
         $sql = "INSERT INTO register (image, user_name, mobile_no, address, email, password, status, token, user_type) VALUES ('$dest', '$name', '$mobile_no', '$address', '$email', '$password', '$status', '$token', '$userType')";
         if ($this->conn->query($sql) === true) {
             $last_id = $this->conn->insert_id;

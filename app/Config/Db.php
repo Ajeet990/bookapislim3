@@ -12,7 +12,13 @@ class Db
         $username = "amn";
         $password = "N0p@sword";
         $dbname = "bookexchange";
-        // $servername = "localhost";
+
+        // $servername = "182.76.151.197";
+        // $username = "amn";
+        // $password = "N0p@sword";
+        // $dbname = "bookexchange";
+
+        // $servername = "127.0.0.1";
         // $username = "root";
         // $password = "";
         // $dbname = "bookapi";

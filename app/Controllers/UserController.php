@@ -49,13 +49,13 @@ class UserController
     {
         $params = $request->getParsedBody();
                                 
-        $name = mysqli_real_escape_string($this->conn, trim($params['name'] ?? ''));
-        $mobile_no = mysqli_real_escape_string($this->conn, trim($params['mobile_no'] ?? ''));
-        $address = mysqli_real_escape_string($this->conn, trim($params['address'] ?? ''));
-        $email = mysqli_real_escape_string($this->conn, trim($params['email'] ?? ''));
-        $password = mysqli_real_escape_string($this->conn, trim($params['password'] ?? ''));
+        $name = trim($params['name'] ?? '');
+        $mobile_no = trim($params['mobile_no'] ?? '');
+        $address = trim($params['address'] ?? '');
+        $email = trim($params['email'] ?? '');
+        $password = trim($params['password'] ?? '');
+
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        
         if (strlen($mobile_no) != 10) {
             $jsonMessage = array("isSuccess" => false,
             "message" => "Mobile number should be of 10 digits.");
@@ -64,22 +64,24 @@ class UserController
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
         }
-
+        
         $validation = $this->checkEmailAndMobileExists($email, $mobile_no);
         if ($validation) {
             if (isset($_FILES['image']) && strlen($_FILES['image']['name']) != 0) {
-                $allowedExt = ['image/png', 'image/jpg', 'image/jpeg'];
-                if (in_array($_FILES['image']['type'], $allowedExt)) {
+                $allowedExt = ['png', 'jpg', 'jpeg'];
+                $path = $_FILES['image']['name'];
+                $imgExt = pathinfo($path, PATHINFO_EXTENSION);
+
+                if (in_array($imgExt, $allowedExt)) {
                     $image = $_FILES['image'];
                     $img_name = $image['name'];
                     $img_path = $image['tmp_name'];
-                    $status = 'active';
-                    $token = '';
-                    $userType = 0;// 0 for normal usr
-                    $dest = mysqli_real_escape_string($this->conn, __DIR__."/../img/users/".$img_name);
-                    $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $dest, $status, $token, $userType);
+                    $dest = __DIR__."/../img/users/".$img_name;
+                    $userImgLink = "app/img/users/".$img_name;
+                    move_uploaded_file($img_path, $dest);
+
+                    $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $userImgLink);
                     if ($signUpRst) {
-                        move_uploaded_file($img_path, $dest);
                         $tok_val = $this->token->genCSRFTkn();
                         $jsonMessage = array("isSuccess" => true,
                         "message" => "Registration success",
