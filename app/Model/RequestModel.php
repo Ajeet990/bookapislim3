@@ -9,6 +9,7 @@ class RequestModel
     public const RETURNED_STATUS = 3;
     public const REJECTED_STATUS = 4;
     protected $conn;
+    
     public function __construct($conn)
     {
         $this->conn = $conn;

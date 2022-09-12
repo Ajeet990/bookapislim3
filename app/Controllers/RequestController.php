@@ -7,6 +7,7 @@ use App\GetTokenFromDb\GetToken;
 
 use App\Token\GenToken;
 
+
 class RequestController
 {
     protected $conn;

@@ -7,6 +7,7 @@ class UserModel
     public const USER_TYPE = 0; //for normal user
 
     protected $conn;
+    
     public function __construct($conn)
     {
         $this->conn = $conn;
