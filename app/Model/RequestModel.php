@@ -3,7 +3,11 @@ namespace App\Model;
 
 class RequestModel
 {
-    public const STATUS = "pending";
+    public const PENDING_STATUS = 0;
+    public const APPROVE_STATUS = 1;
+    public const RETURNING_STATUS = 2;
+    public const RETURNED_STATUS = 3;
+    public const REJECTED_STATUS = 4;
     protected $conn;
     public function __construct($conn)
     {
@@ -17,9 +21,9 @@ class RequestModel
         $bookOwnerStmt->execute();
         $owner = $bookOwnerStmt->get_result()->fetch_assoc();
         $ownerId = $owner['owner_id'];
-        $status = RequestModel::STATUS;
+        $status = RequestModel::PENDING_STATUS;
         $insertRqst = $this->conn->prepare("INSERT INTO request(requester_id, owner_id, book_id, reason, status, rqst_date) VALUES (?, ?, ?, ?, ?, ?)");
-        $insertRqst->bind_param("ssssss", $requesterId, $ownerId, $bookId, $rqstBookReason, $status, $date);
+        $insertRqst->bind_param("ssssis", $requesterId, $ownerId, $bookId, $rqstBookReason, $status, $date);
         $insertRqst->execute();
         return true;
 
@@ -28,14 +32,14 @@ class RequestModel
     public function listRequests(int $userId) : array
     {
 
-        $pendingStatus = "0";
-        $returningStatus = "2";
+        $pendingStatus = RequestModel::PENDING_STATUS;
+        $returningStatus = RequestModel::RETURNING_STATUS;
         $listRqst = $this->conn->prepare("select rg.user_name as requester, bo.book_name as book, rq.status
         from request as rq
         inner join register as rg on rg.id = rq.requester_id
         inner join books as bo on bo.id = rq.book_id
         where rq.owner_id = ? and (rq.status = ? or rq.status = ?)");
-        $listRqst->bind_param("iss", $userId, $pendingStatus, $returningStatus);
+        $listRqst->bind_param("iii", $userId, $pendingStatus, $returningStatus);
         $listRqst->execute();
         $myRequests = $listRqst->get_result()->fetch_all(MYSQLI_ASSOC);
         return $myRequests;
@@ -60,15 +64,15 @@ class RequestModel
 
     public function listSentRequest(int $userId) : array
     {
-        $pedingStatus = "0";
-        $returningStatus = "2";
+        $pedingStatus = RequestModel::PENDING_STATUS;
+        $returningStatus = RequestModel::RETURNING_STATUS;
         $listSentRqst = [];
         $listRqstSent = $this->conn->prepare("select rg.user_name as owner, bo.book_name as book, rq.status
         from request as rq
         inner join register as rg on rg.id = rq.owner_id
         inner join books as bo on bo.id = rq.book_id
         where rq.requester_id = ? and (rq.status = ? or rq.status = ?)");
-        $listRqstSent->bind_param("iss", $userId, $pedingStatus, $returningStatus);
+        $listRqstSent->bind_param("iii", $userId, $pedingStatus, $returningStatus);
         $listRqstSent->execute();
         $listSentRqst = $listRqstSent->get_result()->fetch_all(MYSQLI_ASSOC);
         return $listSentRqst;
@@ -93,24 +97,24 @@ class RequestModel
 
     public function grantIssueRequest(int $requestingId, string $Date)
     {
-        $approveRequest = "1";
+        $approveRequest = RequestModel::APPROVE_STATUS;
         $grantIssueQry = $this->conn->prepare("update request set status = ?, issued_date = ? where id = ?");
-        $grantIssueQry->bind_param("ssi", $approveRequest, $Date, $requestingId);
+        $grantIssueQry->bind_param("isi", $approveRequest, $Date, $requestingId);
         $grantIssueQry->execute();
         return true;
     }
 
     public function cancelIssueRequest(int $requestingId, string $cancelMessage)
     {
-        $rejectRequest = "4";
+        $rejectRequest = RequestModel::REJECTED_STATUS;
         $cancelIssueRequest = $this->conn->prepare("update request set status = ? where id = ?");
-        $cancelIssueRequest->bind_param("si", $rejectRequest, $requestingId);
+        $cancelIssueRequest->bind_param("ii", $rejectRequest, $requestingId);
         $cancelIssueRequest->execute();
         return true;
     }
     public function returnBookRequest(int $requestingId) : bool
     {
-        $returnValue = '2';
+        $returnValue = RequestModel::RETURNING_STATUS;
         $returnBookQry = $this->conn->prepare("select * from request where id = ?");
         $returnBookQry->bind_param("i", $requestingId);
         $returnBookQry->execute();
@@ -119,7 +123,7 @@ class RequestModel
 
         if($returningStatus == '1') {
             $returningBook = $this->conn->prepare("update request set status = ? where id = ?");
-            $returningBook->bind_param("si", $returnValue, $requestingId);
+            $returningBook->bind_param("ii", $returnValue, $requestingId);
             $returningBook->execute();
             return true;
         } else {
@@ -130,9 +134,9 @@ class RequestModel
 
     public function acceptReturnRequest(int $requestingId, string $Date)
     {
-        $acceptStatus = "3";
+        $acceptReturnRequest = RequestModel::RETURNED_STATUS;
         $grntRqstQry = $this->conn->prepare("update request set status = ?, return_date = ? where id = ?");
-        $grntRqstQry->bind_param("ssi", $acceptStatus, $Date, $requestingId);
+        $grntRqstQry->bind_param("isi", $acceptReturnRequest, $Date, $requestingId);
         $grntRqstQry->execute();
         return true;
     }
