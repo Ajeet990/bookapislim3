@@ -3,45 +3,53 @@ namespace App\Model;
 
 class RequestModel
 {
+    public const STATUS = "pending";
     protected $conn;
     public function __construct($conn)
     {
         $this->conn = $conn;
     }
 
-    public function RequestBook($userId, $bookId, $date)
+    public function RequestBook(string $requesterId, string $bookId, string $rqstBookReason, string $date) : bool
     {
-        $bookOwnerId = $this->conn->query("select owner_id from books where id = '$bookId'");
-        $owner_Id = mysqli_fetch_assoc($bookOwnerId);
-        $ownerId = $owner_Id['owner_id'];
-        $insertRqst = $this->conn->query("insert into request(requester_id, owner_id, book_id, status, rqst_date) VALUES ('$userId', '$ownerId', '$bookId','pending', '$date')");
+        $bookOwnerStmt = $this->conn->prepare("select owner_id from books where id = ?");
+        $bookOwnerStmt->bind_param("s",$bookId);
+        $bookOwnerStmt->execute();
+        $owner = $bookOwnerStmt->get_result()->fetch_assoc();
+        $ownerId = $owner['owner_id'];
+        $status = RequestModel::STATUS;
+        $insertRqst = $this->conn->prepare("INSERT INTO request(requester_id, owner_id, book_id, reason, status, rqst_date) VALUES (?, ?, ?, ?, ?, ?)");
+        $insertRqst->bind_param("ssssss", $requesterId, $ownerId, $bookId, $rqstBookReason, $status, $date);
+        $insertRqst->execute();
         return true;
+
     }
 
-    public function listRequests(int $userId)
+    public function listRequests(int $userId) : array
     {
-        $myRequests = array();
 
-        $listRqst = $this->conn->query("select rg.user_name as requester, bo.book_name as book, rq.isReturning as returnRequesting
+        $pendingStatus = "0";
+        $returningStatus = "2";
+        $listRqst = $this->conn->prepare("select rg.user_name as requester, bo.book_name as book, rq.status
         from request as rq
         inner join register as rg on rg.id = rq.requester_id
         inner join books as bo on bo.id = rq.book_id
-        where rq.owner_id = '$userId' and (rq.status = 'pending' or rq.isReturning = '1')");
-        while ($row = mysqli_fetch_assoc($listRqst)) {
-            array_push($myRequests, $row);
-        }
+        where rq.owner_id = ? and (rq.status = ? or rq.status = ?)");
+        $listRqst->bind_param("iss", $userId, $pendingStatus, $returningStatus);
+        $listRqst->execute();
+        $myRequests = $listRqst->get_result()->fetch_all(MYSQLI_ASSOC);
         return $myRequests;
     }
 
     public function formateReceivedRqstMessage($listRequest)
     {
-        $formatedList = array();
+        $formatedList = [];
         foreach($listRequest as $item) {
-            if ($item['returnRequesting'] == 1) {
-                $msg = $item['requester']." requested you to return ".$item['book'];
+            if ($item['status'] == 2) {
+                $msg = $item['requester']." wants to return your ".$item['book']." book";
                 array_push($formatedList, $msg);
                 $msg = '';
-            } else {
+            } else if ($item['status'] == 0) {
                 $msg = $item['requester']." requested you ".$item['book'];
                 array_push($formatedList, $msg);
                 $msg = '';
@@ -50,48 +58,69 @@ class RequestModel
         return $formatedList;
     }
 
-    public function listSentRequest($userId)
+    public function listSentRequest(int $userId) : array
     {
-        $listSentRqst = array();
-        $listRqstSent = $this->conn->query("select rg.user_name as owner, bo.book_name as book
+        $pedingStatus = "0";
+        $returningStatus = "2";
+        $listSentRqst = [];
+        $listRqstSent = $this->conn->prepare("select rg.user_name as owner, bo.book_name as book, rq.status
         from request as rq
         inner join register as rg on rg.id = rq.owner_id
         inner join books as bo on bo.id = rq.book_id
-        where rq.requester_id = '$userId' and rq.status = 'pending'");
-        while($row = mysqli_fetch_assoc($listRqstSent)){
-            array_push($listSentRqst, $row);
-        }
+        where rq.requester_id = ? and (rq.status = ? or rq.status = ?)");
+        $listRqstSent->bind_param("iss", $userId, $pedingStatus, $returningStatus);
+        $listRqstSent->execute();
+        $listSentRqst = $listRqstSent->get_result()->fetch_all(MYSQLI_ASSOC);
         return $listSentRqst;
     }
 
-    public function formateSentRqstMsg($listSentRst)
+    public function formateSentRqstMsg($listSentRst) : array
     {
-        $sentRqstList = array();
+        $sentRqstList = [];
         foreach($listSentRst as $item) {
-            $msg = "You requested ".$item['book']." to ".$item['owner'];
-            array_push($sentRqstList, $msg);
-            $msg = '';
+            if ($item['status'] == 0) {
+                $msg = "You requested ".$item['book']." to ".$item['owner'];
+                array_push($sentRqstList, $msg);
+                $msg = '';
+            } else if ($item['status'] == 2) {
+                $msg = "You are returning ".$item['book']." to ".$item['owner'];
+                array_push($sentRqstList, $msg);
+                $msg = '';
+            }
         }
         return $sentRqstList;
     }
 
-    public function grantIssueRequest($requestingId, $Date)
+    public function grantIssueRequest(int $requestingId, string $Date)
     {
-        $grantIssueQry = $this->conn->query("update request set status = 'issued', issued_date = '$Date' where id = '$requestingId'");
+        $approveRequest = "1";
+        $grantIssueQry = $this->conn->prepare("update request set status = ?, issued_date = ? where id = ?");
+        $grantIssueQry->bind_param("ssi", $approveRequest, $Date, $requestingId);
+        $grantIssueQry->execute();
         return true;
     }
 
     public function cancelIssueRequest(int $requestingId, string $cancelMessage)
     {
-        $cancelIssueRequest = $this->conn->query("update request set status = 'rejected' where id = '$requestingId'");
+        $rejectRequest = "4";
+        $cancelIssueRequest = $this->conn->prepare("update request set status = ? where id = ?");
+        $cancelIssueRequest->bind_param("si", $rejectRequest, $requestingId);
+        $cancelIssueRequest->execute();
         return true;
     }
-    public function returnBookRequest($requestingId)
+    public function returnBookRequest(int $requestingId) : bool
     {
-        $returnBookQry = $this->conn->query("select * from request where id = '$requestingId'");
-        $row = mysqli_fetch_assoc($returnBookQry);
-        if($row['status'] == 'issued') {
-            $returningBook = $this->conn->query("update request set isReturning = '1' where id = '$requestingId'");
+        $returnValue = '2';
+        $returnBookQry = $this->conn->prepare("select * from request where id = ?");
+        $returnBookQry->bind_param("i", $requestingId);
+        $returnBookQry->execute();
+        $getStatus = $returnBookQry->get_result()->fetch_assoc();
+        $returningStatus = $getStatus['status'];
+
+        if($returningStatus == '1') {
+            $returningBook = $this->conn->prepare("update request set status = ? where id = ?");
+            $returningBook->bind_param("si", $returnValue, $requestingId);
+            $returningBook->execute();
             return true;
         } else {
             return false;
@@ -99,10 +128,12 @@ class RequestModel
 
     }
 
-    public function grantReturnRequest($requestingId, $Date, $userRating)
+    public function acceptReturnRequest(int $requestingId, string $Date)
     {
-        $grntRqstQry = $this->conn->query("update request set status = 'returned', return_date = '$Date' where id = '$requestingId'");
-        $updateRatingQry = $this->conn->query("update register set rating = '$userRating' where id = '$requestingId'");
+        $acceptStatus = "3";
+        $grntRqstQry = $this->conn->prepare("update request set status = ?, return_date = ? where id = ?");
+        $grntRqstQry->bind_param("ssi", $acceptStatus, $Date, $requestingId);
+        $grntRqstQry->execute();
         return true;
     }
 }

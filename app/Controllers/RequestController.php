@@ -27,7 +27,10 @@ class RequestController
     
         $bookId = $args['bookId'];
         $Date = date("Y-m-d");
-        $rqstBookRst = $this->requestModelObj->RequestBook( $_SESSION['userId'],$bookId, $Date);
+        $params = $request->getParsedBody();
+        $rqstBookReason = trim($params['reason'] ?? '');
+
+        $rqstBookRst = $this->requestModelObj->RequestBook( $_SESSION['userId'],$bookId,$rqstBookReason, $Date);
         if($rqstBookRst) {
             $jsonMessage = array("isSuccess" => true,
             "message" => "Requested successfully.");
@@ -43,28 +46,26 @@ class RequestController
     public function listReceivedRequest(Request $request, Response $response)
     {
 
-                //getting all the request done by the users.
-                $listRequest = $this->requestModelObj->listRequests($_SESSION['userId']);
-                // die();
-
-                if(count($listRequest) > 0) {
-                    // function to formate the message in profer form to display.
-                    $formatedMessage = $this->requestModelObj->formateReceivedRqstMessage($listRequest);
-                    $jsonMessage = array("isSuccess" => true,
-                    "message" => "List of all requests",
-                    "request" => $formatedMessage);
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                } else {
-                    $jsonMessage = array("isSuccess" => true,
-                    "message" => "No new requests.");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(401);
-                }
+        //getting all the request done by the users.
+        $listRequest = $this->requestModelObj->listRequests($_SESSION['userId']);
+        if(count($listRequest) > 0) {
+            // function to formate the message in profer form to display.
+            $formatedMessage = $this->requestModelObj->formateReceivedRqstMessage($listRequest);
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "List of all requests",
+            "request" => $formatedMessage);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        } else {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "No new request received.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(401);
+        }
     }
 
     public function listSentRequest(Request $request, Response $response)
@@ -150,10 +151,8 @@ class RequestController
 
         $requestingId = (int) $args['requestingId'];
         $Date = date("Y-m-d");
-        $params = $request->getParsedBody();
-        $userRating = trim($params['userRating'] ?? '');
 
-        $grntRtnRqst = $this->requestModelObj->grantReturnRequest($requestingId, $Date, $userRating);
+        $grntRtnRqst = $this->requestModelObj->acceptReturnRequest($requestingId, $Date);
         if($grntRtnRqst) {
             $jsonMessage = array("isSuccess" => true,
             "message" => "Accepted return request successfully.");

@@ -121,9 +121,10 @@ class BookController
                 $img_name = $bImage['name'];
                 $img_path = $bImage['tmp_name'];
                 $bookDest = __DIR__."/../img/books/".$img_name;
+                $bookImgLink = "app/img/users/".$img_name;
                 move_uploaded_file($img_path, $bookDest);
 
-                $editRst = $this->bookModelObj->editBook($bName, $bookDest, $bGenre, $bAuthor, $edition, $description, $bookId);
+                $editRst = $this->bookModelObj->editBook($bName, $bookImgLink, $bGenre, $bAuthor, $edition, $description, $bookId);
                 if($editRst) {
                     $jsonMessage = array("isSuccess" => true,
                                         "message" => "Book Updated");

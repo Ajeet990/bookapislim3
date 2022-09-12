@@ -18,7 +18,7 @@ class Db
         // $password = "N0p@sword";
         // $dbname = "bookexchange";
 
-        // $servername = "127.0.0.1";
+        // $servername = "localhost";
         // $username = "root";
         // $password = "";
         // $dbname = "bookapi";

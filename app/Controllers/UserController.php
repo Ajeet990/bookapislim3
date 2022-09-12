@@ -35,8 +35,7 @@ class UserController
 
     public function userList(Request $request, Response $response)
     {
-        // return "here";
-        $uList = array($this->userModelObj->listUser());
+        $uList = $this->userModelObj->listUser();
         $jsonMessage = array("isSuccess" => true,
                                 "message" => "List of users",
                                 "list" => $uList);

@@ -8,10 +8,13 @@ class GetToken
         $this->conn = $conn;
     }
 
-    public function getTokenFromDb($userId)
+    public function getTokenFromDb(int $userId) : string
     {
-        $getToken = $this->conn->query("select token from register where id = '$userId'");
-        $userToken = mysqli_fetch_assoc($getToken);
-        return $userToken['token'];
+        $getToken = $this->conn->prepare("select token from register where id = ?");
+        $getToken->bind_param("i", $userId);
+        $getToken->execute();
+        $token = $getToken->get_result();
+        $getToken = $token->fetch_assoc();
+        return $getToken['token'];
     }
 }
