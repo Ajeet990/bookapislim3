@@ -96,11 +96,7 @@ class BookController
             return $response
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
-        }
-        
-        
-        
-        
+        }       
     }
 
     public function editBook(Request $request, Response $response, $args)

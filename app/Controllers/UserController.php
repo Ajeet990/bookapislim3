@@ -23,10 +23,12 @@ class UserController
         $this->token = new GenToken();
     }
 
-    public function checkEmailAndMobileExists($email, $mobile_no)
+    public function checkEmailAndMobileExists(string $email, string $mobile_no) 
     {
-        $valQry = $this->conn->query("select * from register where email = '$email' or mobile_no = '$mobile_no'");
-        $num = mysqli_num_rows($valQry);
+        $valQry = $this->conn->prepare("select * from register where email = ? or mobile_no = ?");
+        $valQry->bind_param("ss", $email, $mobile_no);
+        $valQry->execute();
+        $num = $valQry->get_result()->num_rows;
         if ($num > 0) {
             return false;
         } else {
@@ -47,6 +49,7 @@ class UserController
     }
     public function signUp(Request $request, Response $response)
     {
+        $userImgLink = '0';
         $params = $request->getParsedBody();
                                 
         $name = trim($params['name'] ?? '');
@@ -79,25 +82,6 @@ class UserController
                     $dest = __DIR__."/../img/users/".$img_name;
                     $userImgLink = "app/img/users/".$img_name;
                     move_uploaded_file($img_path, $dest);
-
-                    $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $userImgLink);
-                    if ($signUpRst) {
-                        $tok_val = $this->token->genCSRFTkn();
-                        $jsonMessage = array("isSuccess" => true,
-                        "message" => "Registration success",
-                        "Token" => $tok_val);
-                        $response->getBody()->write(json_encode($jsonMessage));
-                        return $response
-                        ->withHeader("content-type", "application/json")
-                        ->withStatus(200);
-                    } else {
-                        $jsonMessage = array("isSuccess" => false,
-                        "message" => "Something error occured.");
-                        $response->getBody()->write(json_encode($jsonMessage));
-                        return $response
-                        ->withHeader("content-type", "application/json")
-                        ->withStatus(500);
-                    }
                 } else {
                     $jsonMessage = array("isSuccess" => false,
                     "message" => "Only images are allowed.");
@@ -106,13 +90,24 @@ class UserController
                     ->withHeader("content-type", "application/json")
                     ->withStatus(200);
                 }
-            } else {
-                $jsonMessage = array("isSuccess" => false,
-                "message" => "Please upload image for User.");
+            }
+            $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $userImgLink);
+            if ($signUpRst) {
+                $tok_val = $this->token->genCSRFTkn();
+                $jsonMessage = array("isSuccess" => true,
+                "message" => "Registration success",
+                "Token" => $tok_val);
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")
                 ->withStatus(200);
+            } else {
+                $jsonMessage = array("isSuccess" => false,
+                "message" => "Something error occured.");
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(500);
             }
             
         } else {
