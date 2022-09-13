@@ -25,10 +25,10 @@ class UserController
 
     public function checkEmailAndMobileExists(string $email, string $mobile_no) 
     {
-        $valQry = $this->conn->prepare("select * from register where email = ? or mobile_no = ?");
-        $valQry->bind_param("ss", $email, $mobile_no);
-        $valQry->execute();
-        $num = $valQry->get_result()->num_rows;
+        $checkNumEmailExists = $this->conn->prepare("select * from register where email = ? or mobile_no = ?");
+        $checkNumEmailExists->bind_param("ss", $email, $mobile_no);
+        $checkNumEmailExists->execute();
+        $num = $checkNumEmailExists->get_result()->num_rows;
         if ($num > 0) {
             return false;
         } else {
