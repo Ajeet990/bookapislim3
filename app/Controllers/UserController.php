@@ -49,75 +49,100 @@ class UserController
     }
     public function signUp(Request $request, Response $response)
     {
-        $userImgLink = '0';
-        $params = $request->getParsedBody();
-                                
-        $name = trim($params['name'] ?? '');
-        $mobile_no = trim($params['mobile_no'] ?? '');
-        $address = trim($params['address'] ?? '');
-        $email = trim($params['email'] ?? '');
-        $password = trim($params['password'] ?? '');
+        if (!isset($_SESSION['userId'])) {       
+            $userImgLink = '0';
+            $params = $request->getParsedBody();
+                                    
+            $name = trim($params['name'] ?? '');
+            $mobile_no = trim($params['mobile_no'] ?? '');
+            $address = trim($params['address'] ?? '');
+            $email = trim($params['email'] ?? '');
+            $password = trim($params['password'] ?? '');
 
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        if (strlen($mobile_no) != 10) {
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "Mobile number should be of 10 digits.");
-            $response->getBody()->write(json_encode($jsonMessage));
-            return $response
-            ->withHeader("content-type", "application/json")
-            ->withStatus(200);
-        }
-        
-        $validation = $this->checkEmailAndMobileExists($email, $mobile_no);
-        if ($validation) {
-            if (isset($_FILES['image']) && strlen($_FILES['image']['name']) != 0) {
-                $allowedExt = ['png', 'jpg', 'jpeg'];
-                $path = $_FILES['image']['name'];
-                $imgExt = pathinfo($path, PATHINFO_EXTENSION);
-
-                if (in_array($imgExt, $allowedExt)) {
-                    $image = $_FILES['image'];
-                    $img_name = $image['name'];
-                    $img_path = $image['tmp_name'];
-                    $dest = __DIR__."/../img/users/".$img_name;
-                    $userImgLink = "app/img/users/".$img_name;
-                    move_uploaded_file($img_path, $dest);
-                } else {
-                    $jsonMessage = array("isSuccess" => false,
-                    "message" => "Only images are allowed.");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                }
-            }
-            $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $userImgLink);
-            if ($signUpRst) {
-                $tok_val = $this->token->genCSRFTkn();
-                $jsonMessage = array("isSuccess" => true,
-                "message" => "Registration success",
-                "Token" => $tok_val);
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            if (strlen($mobile_no) != 10) {
+                $jsonMessage = array("isSuccess" => false,
+                "message" => "Mobile number should be of 10 digits.");
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")
                 ->withStatus(200);
+            }
+            
+            $validation = $this->checkEmailAndMobileExists($email, $mobile_no);
+            if ($validation) {
+                if (isset($_FILES['image']) && strlen($_FILES['image']['name']) != 0) {
+                    $allowedExt = ['png', 'jpg', 'jpeg'];
+                    $path = $_FILES['image']['name'];
+                    $imgExt = pathinfo($path, PATHINFO_EXTENSION);
+
+                    if (in_array($imgExt, $allowedExt)) {
+                        $image = $_FILES['image'];
+                        $img_name = $image['name'];
+                        $img_path = $image['tmp_name'];
+                        $dest = __DIR__."/../img/users/".$img_name;
+                        $userImgLink = "app/img/users/".$img_name;
+                        move_uploaded_file($img_path, $dest);
+                    } else {
+                        $jsonMessage = array("isSuccess" => false,
+                        "message" => "Only images are allowed.");
+                        $response->getBody()->write(json_encode($jsonMessage));
+                        return $response
+                        ->withHeader("content-type", "application/json")
+                        ->withStatus(200);
+                    }
+                }
+                $tok_val = $this->token->genCSRFTkn();
+                $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $userImgLink, $tok_val);
+                if ($signUpRst) {
+                    $loginRst = $this->userModelObj->logInAtSignUp($mobile_no, $tok_val);
+                    if ($loginRst) {
+
+                        $_SESSION['userLoggedInToken'] = $tok_val;
+                        $_SESSION['userLoggedInMobile'] = $mobile_no;
+                        $_SESSION['userId'] = $loginRst[0];
+                        $_SESSION['userName'] = $loginRst[1];
+
+                        $jsonMessage = array("isSuccess" => true,
+                        "message" => "Registration success",
+                        "Token" => $tok_val);
+                        $response->getBody()->write(json_encode($jsonMessage));
+                        return $response
+                        ->withHeader("content-type", "application/json")
+                        ->withStatus(200);
+                    } else {
+                        $jsonMessage = array("isSuccess" => false,
+                        "message" => "Something error occured, during login.");
+                        $response->getBody()->write(json_encode($jsonMessage));
+                        return $response
+                        ->withHeader("content-type", "application/json")
+                        ->withStatus(500);
+                    }
+                } else {
+                    $jsonMessage = array("isSuccess" => false,
+                    "message" => "Something error occured, during signUp");
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(500);
+                }
+                
             } else {
                 $jsonMessage = array("isSuccess" => false,
-                "message" => "Something error occured.");
+                "message" => "Phone or Email already exists.");
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")
-                ->withStatus(500);
-            }
-            
+                ->withStatus(200);
+            }   
         } else {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "Phone or Email already exists.");
+            "message" => "You are already logged in. Please logOut for registration.");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
-        }       
+        }    
     }
 
     public function logIn(Request $request, Response $response)
