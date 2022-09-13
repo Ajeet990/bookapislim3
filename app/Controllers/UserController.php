@@ -62,11 +62,12 @@ class UserController
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             if (strlen($mobile_no) != 10) {
                 $jsonMessage = array("isSuccess" => false,
-                "message" => "Mobile number should be of 10 digits.");
+                "message" => "Mobile number should be of 10 digits.",
+                "Token" => "");
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")
-                ->withStatus(200);
+                ->withStatus(500);
             }
             
             $validation = $this->checkEmailAndMobileExists($email, $mobile_no);
@@ -85,11 +86,12 @@ class UserController
                         move_uploaded_file($img_path, $dest);
                     } else {
                         $jsonMessage = array("isSuccess" => false,
-                        "message" => "Only images are allowed.");
+                        "message" => "Only images are allowed.",
+                        "Token" => "");
                         $response->getBody()->write(json_encode($jsonMessage));
                         return $response
                         ->withHeader("content-type", "application/json")
-                        ->withStatus(200);
+                        ->withStatus(500);
                     }
                 }
                 $tok_val = $this->token->genCSRFTkn();
@@ -112,7 +114,8 @@ class UserController
                         ->withStatus(200);
                     } else {
                         $jsonMessage = array("isSuccess" => false,
-                        "message" => "Something error occured, during login.");
+                        "message" => "Something error occured, during login.",
+                        "Token" => "");
                         $response->getBody()->write(json_encode($jsonMessage));
                         return $response
                         ->withHeader("content-type", "application/json")
@@ -120,7 +123,8 @@ class UserController
                     }
                 } else {
                     $jsonMessage = array("isSuccess" => false,
-                    "message" => "Something error occured, during signUp");
+                    "message" => "Something error occured, during signUp",
+                    "Token" => "");
                     $response->getBody()->write(json_encode($jsonMessage));
                     return $response
                     ->withHeader("content-type", "application/json")
@@ -129,19 +133,21 @@ class UserController
                 
             } else {
                 $jsonMessage = array("isSuccess" => false,
-                "message" => "Phone or Email already exists.");
+                "message" => "Phone or Email already exists.",
+                "Token" => "");
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")
-                ->withStatus(200);
+                ->withStatus(500);
             }   
         } else {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "You are already logged in. Please logOut for registration.");
+            "message" => "You are already logged in. Please logOut for registration.",
+            "Token" => "");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(200);
+            ->withStatus(500);
         }    
     }
 
@@ -171,28 +177,31 @@ class UserController
                 ->withStatus(200);
             } else {
                     $jsonMessage = array("isSuccess" => false,
-                                        "message" => "Login Failed. Password doesn't match");
+                                        "message" => "Login Failed. Password doesn't match",
+                                        "Token" => "");
                     $response->getBody()->write(json_encode($jsonMessage));
                     return $response
                     ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
+                    ->withStatus(500);
             }
         }
         else {
                 $jsonMessage = array("isSuccess" => false,
-                "message" => "Login Failed. Mobile number doesn't exits.");
+                "message" => "Login Failed. Mobile number doesn't exits.",
+                "Token" => "");
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")
-                ->withStatus(200);
+                ->withStatus(500);
         }
         } else {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "You are already loggedIn, please logOut first.");
+            "message" => "You are already loggedIn, please logOut first.",
+            "Token" => "");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(200);
+            ->withStatus(500);
         }
 
     }
@@ -206,7 +215,8 @@ class UserController
             unset($_SESSION['userId']);
             session_destroy();
             $jsonMessage = array("isSuccess" => true,
-            "message" => "Logged Out successfully.");
+            "message" => "Logged Out successfully.",
+            "Token" => "");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
@@ -236,11 +246,12 @@ class UserController
         $updateRst =  $this->userModelObj->updateProfile($dest, $name, $address, $_SESSION['userId']);
         if($updateRst) {
             $jsonMessage = array("isSuccess" => true,
-            "message" => "Profile updated Successfully.");
+            "message" => "Profile updated Successfully.",
+            "Token" => "");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(401);
+            ->withStatus(200);
         }
 
     }

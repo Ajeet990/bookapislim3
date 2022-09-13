@@ -26,19 +26,21 @@ class AuthMiddleware
                 return $response;
             } else {
                 $jsonMessage = array("isSuccess" => false,
-                "message" => "Invalid Request. Token not matching.");
+                "message" => "Invalid Request. Token not matching.",
+                "Token" => "");
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")
-                ->withStatus(401);
+                ->withStatus(500);
             }
         } else {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "User Not logged In, please logIn first");
+            "message" => "User Not logged In, please logIn first",
+            "Token" => "");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(200);
+            ->withStatus(500);
         }
     }
 }
