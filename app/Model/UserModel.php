@@ -81,11 +81,11 @@ class UserModel
         return true;
     }
 
-    public function removeToken(string $userMobile) : bool
+    public function removeToken(string $userId) : bool
     {
         $tokenVal = '';
-        $removeTokenRst = $this->conn->prepare("update register set token = ? where mobile_no = ?");
-        $removeTokenRst->bind_param("ss", $tokenVal, $userMobile);
+        $removeTokenRst = $this->conn->prepare("update register set token = ? where id = ?");
+        $removeTokenRst->bind_param("ss", $tokenVal, $userId);
         $removeTokenRst->execute();
         return true;
     }

@@ -13,7 +13,7 @@ $app->get('/bookList', 'BookHelper:listAllBooks');
 
 $app->group('', function() use ($app) {
 
-    $app->get('/logOut', 'UserHelper:logOut');
+    $app->get('/logOut/{userId}', 'UserHelper:logOut');
     $app->post('/updateProfile', 'UserHelper:updateProfile');
     
     //End point related to books.
@@ -32,7 +32,8 @@ $app->group('', function() use ($app) {
     $app->post('/cancelIssueRequest/{requestingId}', 'RequestHelper:cancelIssueRequest');
     $app->post('/returnBookRequest/{requestingId}', 'RequestHelper:returnBookRequest');
     $app->post('/grantReturnRequest/{requestingId}', 'RequestHelper:grantReturnRequest');
-})->add(new AuthMiddleware());
+});
+// ->add(new AuthMiddleware());
 
 
 
