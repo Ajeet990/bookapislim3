@@ -68,8 +68,7 @@ class UserController
     }
 
     public function signUp(Request $request, Response $response)
-    {
-        // if (!isset($_SESSION['userId'])) {       
+    {      
         $userImgLink = '0';
         $params = $request->getParsedBody();
                                 
@@ -88,12 +87,10 @@ class UserController
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(400);
+            ->withStatus(200);
         }
-        $loggedIn = $this->checkUserLoggedIn($mobile_no);
-        if ($loggedIn == '') {          
-            $validation = $this->checkEmailAndMobileExists($email, $mobile_no);
-            if ($validation) {
+        $validation = $this->checkEmailAndMobileExists($email, $mobile_no);
+        if ($validation) {        
                 if (isset($_FILES['image']) && strlen($_FILES['image']['name']) != 0) {
                     $allowedExt = ['png', 'jpg', 'jpeg'];
                     $path = $_FILES['image']['name'];
@@ -114,7 +111,7 @@ class UserController
                         $response->getBody()->write(json_encode($jsonMessage));
                         return $response
                         ->withHeader("content-type", "application/json")
-                        ->withStatus(400);
+                        ->withStatus(200);
                     }
                 }
                 $tok_val = $this->token->genCSRFTkn();
@@ -144,7 +141,7 @@ class UserController
                         $response->getBody()->write(json_encode($jsonMessage));
                         return $response
                         ->withHeader("content-type", "application/json")
-                        ->withStatus(400);
+                        ->withStatus(200);
                     }
                 } else {
                     $jsonMessage = array("isSuccess" => false,
@@ -154,35 +151,22 @@ class UserController
                     $response->getBody()->write(json_encode($jsonMessage));
                     return $response
                     ->withHeader("content-type", "application/json")
-                    ->withStatus(400);
-                }
-                
-            } else {
-                $jsonMessage = array("isSuccess" => false,
-                "message" => "Phone or Email already exists.",
-                "Token" => null,
-                "userId" => null);
-                $response->getBody()->write(json_encode($jsonMessage));
-                return $response
-                ->withHeader("content-type", "application/json")
-                ->withStatus(400);
-            }   
+                    ->withStatus(200);
+                } 
         } else {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "You are already logged in. Please logOut for registration.",
+            "message" => "Phone or email already exists.",
             "Token" => null,
             "userId" => null);
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(400);
+            ->withStatus(200);
         }    
     }
 
     public function logIn(Request $request, Response $response)
     {
-
-        // if(!isset($_SESSION['userId'])) {
         $params = $request->getParsedBody();
         $mobile_no = trim($params['mobile_no'] ?? '');
         $password = trim($params['password'] ?? '');
@@ -195,7 +179,7 @@ class UserController
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(400);
+            ->withStatus(200);
         }
 
         $loggedIn = $this->checkUserLoggedIn($mobile_no);
@@ -226,7 +210,7 @@ class UserController
                         $response->getBody()->write(json_encode($jsonMessage));
                         return $response
                         ->withHeader("content-type", "application/json")
-                        ->withStatus(400);
+                        ->withStatus(200);
                 }
             }
             else {
@@ -237,7 +221,7 @@ class UserController
                     $response->getBody()->write(json_encode($jsonMessage));
                     return $response
                     ->withHeader("content-type", "application/json")
-                    ->withStatus(400);
+                    ->withStatus(200);
             }
         } else {
             $jsonMessage = array("isSuccess" => false,
@@ -247,7 +231,7 @@ class UserController
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(400);
+            ->withStatus(200);
         }
 
     }
