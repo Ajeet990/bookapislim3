@@ -29,7 +29,7 @@ class BookModel
         }
     }
 
-    public function editBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $description, int $bookId) : bool
+    public function updateBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $description, int $bookId) : bool
     {
         $updateQry = $this->conn->prepare("update books set book_name = ?, image = ?, genre = ?, author = ?, edition = ?, description = ? where id = ?");
         $updateQry->bind_param("ssssisi", $bName, $bookDest, $bGenre, $bAuthor, $edition, $description, $bookId);
@@ -100,5 +100,19 @@ class BookModel
         $searchQry->execute();
         $searchBooks = $searchQry->get_result()->fetch_all(MYSQLI_ASSOC);
         return $searchBooks;
+    }
+
+    public function getBookDetail(int $bookId)
+    {
+        $getBookStmt = $this->conn->prepare("select * from books where id = ?");
+        $getBookStmt->bind_param("i", $bookId);
+        $getBookStmt->execute();
+        $getRst = $getBookStmt->get_result();
+        if ($getRst->num_rows > 0) {
+            $book = $getRst->fetch_assoc();
+            return $book;
+        } else {
+            return false;
+        }
     }
 }

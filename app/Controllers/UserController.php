@@ -293,4 +293,92 @@ class UserController
         }
 
     }
+
+    public function getUserById(Request $request, Response $response, $args)
+    {
+        $userId = (int)$args['userId'];
+        $userExists = $this->userModelObj->checkUserExists($userId);
+        if ($userExists) {
+            $getUserDetails = $this->userModelObj->getUser($userId);
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "User details",
+            "user" => $getUserDetails);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "Sorry, no user with that id.",
+            "user" => null);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        }
+    }
+
+    public function resetPassword(Request $request, Response $response)
+    {
+        $params = $request->getParsedBody();
+        $mobile_no = trim($params['mobile_no'] ?? '');
+        $password = trim($params['password'] ?? '');
+
+        if (strlen($mobile_no) != 10) {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "Mobile number should be of 10 digits.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        } 
+        if ($password == '') {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "Password cann't be empty");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        }
+
+        $userExists = $this->userModelObj->checkUserExists($mobile_no);
+        if ($userExists) {
+            $checkLoggedIn = $this->checkUserLoggedIn($mobile_no);
+            if($checkLoggedIn) {
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                $updatePass = $this->userModelObj->updatePassword($mobile_no, $hashed_password);
+                if ($updatePass) {
+                    $jsonMessage = array("isSuccess" => true,
+                    "message" => "Password updated successfully.");
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(200);
+                } else {
+                    $jsonMessage = array("isSuccess" => false,
+                    "message" => "Something went wrong.");
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(200);
+                }
+            } else {
+                $jsonMessage = array("isSuccess" => false,
+                "message" => "User not logged in.");
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(200);
+            }
+
+        } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "Mobile number not registerd.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        }
+
+    }
 }

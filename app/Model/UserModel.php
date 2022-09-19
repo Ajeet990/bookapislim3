@@ -97,4 +97,49 @@ class UserModel
         $updateQry->execute();
         return true;
     }
+
+    public function checkUserExists(int $param)
+    {
+        if (strlen($param) == 10) {
+            $checkUserExistStmt = $this->conn->prepare("select * from register where mobile_no = ?");
+        } else {
+            $checkUserExistStmt = $this->conn->prepare("select * from register where id = ?");
+        }
+        $checkUserExistStmt->bind_param("i", $param);
+        $checkUserExistStmt->execute();
+        $exists = $checkUserExistStmt->get_result();
+        if ($exists->num_rows > 0) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    public function getUser(int $userId)
+    {
+        $getUserStmt = $this->conn->prepare("select * from register where id = ?");
+        $getUserStmt->bind_param("i", $userId);
+        $getUserStmt->execute();
+        $user = $getUserStmt->get_result();
+        if ($user->num_rows > 0) {
+            $rst = $user->fetch_assoc();
+            return $rst;
+        } else {
+            return false;
+        }
+    }
+
+    public function updatePassword(string $mobile_no, string $hashed_password)
+    {
+        $updatePassStmt = $this->conn->prepare("UPDATE register set password = ? where mobile_no = ?");
+        $updatePassStmt->bind_param("ss", $hashed_password, $mobile_no);
+        $updateRst = $updatePassStmt->execute();
+        if ($updateRst) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
 }

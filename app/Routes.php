@@ -15,14 +15,18 @@ $app->group('', function() use ($app) {
 
     $app->get('/logOut/{userId}', 'UserHelper:logOut');
     $app->post('/updateProfile', 'UserHelper:updateProfile');
+    $app->get('/getUserById/{userId}', 'UserHelper:getUserById');
+    $app->post('/resetPass', 'UserHelper:resetPassword');
     
     //End point related to books.
+    $app->get('/getBookById/{bookId}', 'BookHelper:getBookById');
     $app->post('/addBook', 'BookHelper:addBook');
-    $app->post('/editBook/{bookId}', 'BookHelper:editBook');
+    $app->post('/updateBook/{bookId}', 'BookHelper:updateBook');
     $app->post('/deleteBook/{bookId}', 'BookHelper:deleteBook');
     $app->post('/bookFeedback/{bookId}', 'BookHelper:bookFeedback');
     $app->get('/personalBooks', 'BookHelper:personalBooks');
     $app->get('/searchBook/{searchString}','BookHelper:searchBook');
+
 
     //End point related to request
     $app->post('/requestBook/{bookId}', 'RequestHelper:requestBook');
