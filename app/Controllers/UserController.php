@@ -204,7 +204,7 @@ class UserController
                     ->withStatus(200);
                 } else {
                         $jsonMessage = array("isSuccess" => false,
-                                            "message" => "Login Failed. Password doesn't match",
+                                            "message" => "Password Wrong.",
                                             "Token" => null,
                                             "userId" => null);
                         $response->getBody()->write(json_encode($jsonMessage));
@@ -215,7 +215,7 @@ class UserController
             }
             else {
                     $jsonMessage = array("isSuccess" => false,
-                    "message" => "Login Failed. Mobile number doesn't exits.",
+                    "message" => "Mobile no is wrong.",
                     "Token" => null,
                     "userId" => null);
                     $response->getBody()->write(json_encode($jsonMessage));
