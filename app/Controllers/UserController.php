@@ -182,7 +182,7 @@ class UserController
             ->withStatus(200);
         }
 
-        if(!isset($_SESSION['userLoggedInToken']) && !isset($_SESSION['userId'])) {
+        // if(!isset($_SESSION['userLoggedInToken']) && !isset($_SESSION['userId'])) {
             $loginRst = $this->userModelObj->logIn($mobile_no, $password);
             if ($loginRst) {
                 if (password_verify($password, $loginRst[0])) {
@@ -222,46 +222,58 @@ class UserController
                     ->withHeader("content-type", "application/json")
                     ->withStatus(200);
             }
-        } else {
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "You are already loggedIn.",
-            "Token" => null,
-            "userId" => null);
-            $response->getBody()->write(json_encode($jsonMessage));
-            return $response
-            ->withHeader("content-type", "application/json")
-            ->withStatus(200);
-        }
+        // } else {
+        //     $jsonMessage = array("isSuccess" => false,
+        //     "message" => "You are already loggedIn.",
+        //     "Token" => null,
+        //     "userId" => null);
+        //     $response->getBody()->write(json_encode($jsonMessage));
+        //     return $response
+        //     ->withHeader("content-type", "application/json")
+        //     ->withStatus(200);
+        // }
 
     }
 
     public function logOut(Request $request, Response $response, $args)
     {
         $userId = (int)$args['userId'];
-        if(isset($_SESSION['userId']) && isset($_SESSION['userLoggedInToken'])) {
-            $checkLoggedIn = $this->checkUserLoggedIn($userId);
-            if ($checkLoggedIn != '') {
-                $this->userModelObj->removeToken($userId);
-                unset($_SESSION['userLoggedInToken']);
-                unset($_SESSION['userLoggedInMobile']);
-                unset($_SESSION['userId']);
-                session_destroy();
-                $jsonMessage = array("isSuccess" => true,
-                "message" => "Logged Out successfully.");
-                $response->getBody()->write(json_encode($jsonMessage));
-                return $response
-                ->withHeader("content-type", "application/json")
-                ->withStatus(200);
-            } else {
-                $jsonMessage = array("isSuccess" => false,
-                "message" => "User not logged in...",
-                "Token" => null,
-                "userId" => null);
-                $response->getBody()->write(json_encode($jsonMessage));
-                return $response
-                ->withHeader("content-type", "application/json")
-                ->withStatus(200);
+        $userExistsRst = $this->userModelObj->checkUserExists($userId);
+        if ($userExistsRst) {
+            if(isset($_SESSION['userId']) && isset($_SESSION['userLoggedInToken'])) {
+                $checkLoggedIn = $this->checkUserLoggedIn($userId);
+                if ($checkLoggedIn != '') {
+                    $this->userModelObj->removeToken($userId);
+                    unset($_SESSION['userLoggedInToken']);
+                    unset($_SESSION['userLoggedInMobile']);
+                    unset($_SESSION['userId']);
+                    session_destroy();
+                    $jsonMessage = array("isSuccess" => true,
+                    "message" => "Logged Out successfully.");
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(200);
+                } else {
+                    $jsonMessage = array("isSuccess" => false,
+                    "message" => "User not logged in...",
+                    "Token" => null,
+                    "userId" => null);
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(200);
+                }
             }
+        } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "User not exists...",
+            "Token" => null,
+            "userId" => null);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
         }
     }
 
