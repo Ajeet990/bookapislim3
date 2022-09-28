@@ -81,7 +81,7 @@ class UserController
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         if (strlen($mobile_no) != 10) {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "Mobile number should be of 10 digits.",
+            "message" => "Mobile no should be of 10 digits.",
             "Token" => null,
             "userId" => null);
             $response->getBody()->write(json_encode($jsonMessage));
@@ -173,7 +173,7 @@ class UserController
 
         if (strlen($mobile_no) != 10) {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "Mobile number should be of 10 digits.",
+            "message" => "Mobile no should be of 10 digits.",
             "Token" => null,
             "userId" => null);
             $response->getBody()->write(json_encode($jsonMessage));
@@ -182,8 +182,7 @@ class UserController
             ->withStatus(200);
         }
 
-        $loggedIn = $this->checkUserLoggedIn($mobile_no);
-        if ($loggedIn == '') {
+        if(!isset($_SESSION['userLoggedInToken']) && !isset($_SESSION['userId'])) {
             $loginRst = $this->userModelObj->logIn($mobile_no, $password);
             if ($loginRst) {
                 if (password_verify($password, $loginRst[0])) {
@@ -225,7 +224,7 @@ class UserController
             }
         } else {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "You are already loggedIn, please logOut first.",
+            "message" => "You are already loggedIn.",
             "Token" => null,
             "userId" => null);
             $response->getBody()->write(json_encode($jsonMessage));
@@ -239,23 +238,25 @@ class UserController
     public function logOut(Request $request, Response $response, $args)
     {
         $userId = (int)$args['userId'];
-        $userLoggedIn = $this->checkUserLoggedIn($userId);
-        if ($userLoggedIn == ''){
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "You are not logged In.");
-            $response->getBody()->write(json_encode($jsonMessage));
-            return $response
-            ->withHeader("content-type", "application/json")
-            ->withStatus(200);
-        } else {         
-            $removeTokenRst = $this->userModelObj->removeToken($userId);
-            if($removeTokenRst) {
+        if(isset($_SESSION['userId']) && isset($_SESSION['userLoggedInToken'])) {
+            $checkLoggedIn = $this->checkUserLoggedIn($userId);
+            if ($checkLoggedIn != '') {
+                $this->userModelObj->removeToken($userId);
                 unset($_SESSION['userLoggedInToken']);
                 unset($_SESSION['userLoggedInMobile']);
                 unset($_SESSION['userId']);
                 session_destroy();
                 $jsonMessage = array("isSuccess" => true,
                 "message" => "Logged Out successfully.");
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(200);
+            } else {
+                $jsonMessage = array("isSuccess" => false,
+                "message" => "User not logged in...",
+                "Token" => null,
+                "userId" => null);
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")
