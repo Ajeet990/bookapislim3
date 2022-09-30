@@ -288,34 +288,23 @@ class UserController
 
         $userExists = $this->userModelObj->checkUserExists($mobile_no);
         if ($userExists) {
-            $checkLoggedIn = $this->userModelObj->checkUserLoggedIn($mobile_no);
-            if($checkLoggedIn) {
-                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                $updatePass = $this->userModelObj->updatePassword($mobile_no, $hashed_password);
-                if ($updatePass) {
-                    $jsonMessage = array("isSuccess" => true,
-                    "message" => "Password updated successfully.");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                } else {
-                    $jsonMessage = array("isSuccess" => false,
-                    "message" => "Something went wrong.");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                }
-            } else {
-                $jsonMessage = array("isSuccess" => false,
-                "message" => "User not logged in.");
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            $updatePass = $this->userModelObj->updatePassword($mobile_no, $hashed_password);
+            if ($updatePass) {
+                $jsonMessage = array("isSuccess" => true,
+                "message" => "Password updated successfully.");
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")
                 ->withStatus(200);
-            }
-
+            } else {
+                $jsonMessage = array("isSuccess" => false,
+                "message" => "Something went wrong.");
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(200);
+            }         
         } else {
             $jsonMessage = array("isSuccess" => false,
             "message" => "Mobile number not registerd.");
