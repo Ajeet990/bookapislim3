@@ -8,7 +8,6 @@ use App\Token\GenToken;
 
 // session_start();
 
-
 class UserController
 {
     protected $conn;
@@ -21,38 +20,6 @@ class UserController
         $this->valToken = new GetToken($this->conn);
         $this->userModelObj = $userModelObj;
         $this->token = new GenToken();
-    }
-
-    public function checkEmailAndMobileExists(string $email, string $mobile_no) 
-    {
-        $checkNumEmailExists = $this->conn->prepare("select * from register where email = ? or mobile_no = ?");
-        $checkNumEmailExists->bind_param("ss", $email, $mobile_no);
-        $checkNumEmailExists->execute();
-        $num = $checkNumEmailExists->get_result()->num_rows;
-        if ($num > 0) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    public function checkUserLoggedIn(string $param)
-    {
-        if (strlen($param) == 10) {
-            $checkLoggedInStmt = $this->conn->prepare("select * from register where mobile_no = ?");
-        } else {
-            $checkLoggedInStmt = $this->conn->prepare("select * from register where id = ?");
-        }
-        $checkLoggedInStmt->bind_param("s", $param);
-        $checkLoggedInStmt->execute();
-        $checkLoggedInRst = $checkLoggedInStmt->get_result();
-        $loggedInUserDetail = $checkLoggedInRst->fetch_assoc();
-        $loggedInUserToken = $loggedInUserDetail['token'];
-        if($loggedInUserToken == '') {
-            return null;
-        } else {
-            return $loggedInUserToken;
-        }
     }
 
     public function userList(Request $request, Response $response)
@@ -79,80 +46,71 @@ class UserController
         $password = trim($params['password'] ?? '');
 
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        if (strlen($mobile_no) != 10) {
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "Mobile no should be of 10 digits.",
-            "Token" => null,
-            "userId" => null);
-            $response->getBody()->write(json_encode($jsonMessage));
-            return $response
-            ->withHeader("content-type", "application/json")
-            ->withStatus(200);
-        }
-        $validation = $this->checkEmailAndMobileExists($email, $mobile_no);
-        if ($validation) {        
-                if (isset($_FILES['image']) && strlen($_FILES['image']['name']) != 0) {
-                    $allowedExt = ['png', 'jpg', 'jpeg'];
-                    $path = $_FILES['image']['name'];
-                    $imgExt = pathinfo($path, PATHINFO_EXTENSION);
 
-                    if (in_array($imgExt, $allowedExt)) {
-                        $image = $_FILES['image'];
-                        $img_name = $image['name'];
-                        $img_path = $image['tmp_name'];
-                        $dest = __DIR__."/../img/users/".$img_name;
-                        $userImgLink = "app/img/users/".$img_name;
-                        move_uploaded_file($img_path, $dest);
-                    } else {
-                        $jsonMessage = array("isSuccess" => false,
-                        "message" => "Only images are allowed.",
-                        "Token" => null,
-                        "userId" => null);
-                        $response->getBody()->write(json_encode($jsonMessage));
-                        return $response
-                        ->withHeader("content-type", "application/json")
-                        ->withStatus(200);
-                    }
-                }
-                $tok_val = $this->token->genCSRFTkn();
-                $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $userImgLink, $tok_val);
-                if ($signUpRst) {
-                    $loginRst = $this->userModelObj->logInAtSignUp($mobile_no, $tok_val);
-                    if ($loginRst) {
+        $validation = $this->userModelObj->checkEmailAndMobileExists($email, $mobile_no);
+        if ($validation) {   
+            if (isset($_FILES['image']) && strlen($_FILES['image']['name']) != 0) {
+                $allowedExt = ['png', 'jpg', 'jpeg'];
+                $path = $_FILES['image']['name'];
+                $imgExt = pathinfo($path, PATHINFO_EXTENSION);
 
-                        $_SESSION['userLoggedInToken'] = $tok_val;
-                        $_SESSION['userLoggedInMobile'] = $mobile_no;
-                        $_SESSION['userId'] = $loginRst[0];
-                        $_SESSION['userName'] = $loginRst[1];
-
-                        $jsonMessage = array("isSuccess" => true,
-                        "message" => "Registration success",
-                        "Token" => $tok_val,
-                        "userId" => $loginRst[0]);
-                        $response->getBody()->write(json_encode($jsonMessage));
-                        return $response
-                        ->withHeader("content-type", "application/json")
-                        ->withStatus(200);
-                    } else {
-                        $jsonMessage = array("isSuccess" => false,
-                        "message" => "Something error occured, during login.",
-                        "Token" => null,
-                        "userId" => null);
-                        $response->getBody()->write(json_encode($jsonMessage));
-                        return $response
-                        ->withHeader("content-type", "application/json")
-                        ->withStatus(200);
-                    }
+                if (in_array($imgExt, $allowedExt)) {
+                    $image = $_FILES['image'];
+                    $img_name = $image['name'];
+                    $img_path = $image['tmp_name'];
+                    $dest = __DIR__."/../img/users/".$img_name;
+                    $userImgLink = "app/img/users/".$img_name;
+                    move_uploaded_file($img_path, $dest);
                 } else {
                     $jsonMessage = array("isSuccess" => false,
-                    "message" => "Something error occured, during signUp",
+                    "message" => "Only images are allowed.",
                     "Token" => null,
                     "userId" => null);
                     $response->getBody()->write(json_encode($jsonMessage));
                     return $response
                     ->withHeader("content-type", "application/json")
                     ->withStatus(200);
-                } 
+                }
+            }
+            $tok_val = $this->token->genCSRFTkn();
+            $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $userImgLink, $tok_val);
+            if ($signUpRst) {
+                $loginRst = $this->userModelObj->logInAtSignUp($mobile_no, $tok_val);
+                if ($loginRst) {
+
+                    $_SESSION['userLoggedInToken'] = $tok_val;
+                    $_SESSION['userLoggedInMobile'] = $mobile_no;
+                    $_SESSION['userId'] = $loginRst[0];
+                    $_SESSION['userName'] = $loginRst[1];
+
+                    $jsonMessage = array("isSuccess" => true,
+                    "message" => "Registration success",
+                    "Token" => $tok_val,
+                    "userId" => $loginRst[0]);
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(200);
+                } else {
+                    $jsonMessage = array("isSuccess" => false,
+                    "message" => "Something error occured, during login.",
+                    "Token" => null,
+                    "userId" => null);
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(200);
+                }
+            } else {
+                $jsonMessage = array("isSuccess" => false,
+                "message" => "Something error occured, during signUp",
+                "Token" => null,
+                "userId" => null);
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(200);
+            } 
         } else {
             $jsonMessage = array("isSuccess" => false,
             "message" => "Phone or email already exists.",
@@ -170,69 +128,44 @@ class UserController
         $params = $request->getParsedBody();
         $mobile_no = trim($params['mobile_no'] ?? '');
         $password = trim($params['password'] ?? '');
+        $loginRst = $this->userModelObj->logIn($mobile_no, $password);
+        if ($loginRst) {
+            if (password_verify($password, $loginRst[0])) {
+                $tok_val = $this->token->genCSRFTkn();
+                $this->userModelObj->addToken($mobile_no, $tok_val);
+                $_SESSION['userLoggedInToken'] = $tok_val;
+                $_SESSION['userLoggedInMobile'] = $mobile_no;
+                $_SESSION['userId'] = $loginRst[1];
+                $_SESSION['userName'] = $loginRst[2];
 
-        if (strlen($mobile_no) != 10) {
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "Mobile no should be of 10 digits.",
-            "Token" => null,
-            "userId" => null);
-            $response->getBody()->write(json_encode($jsonMessage));
-            return $response
-            ->withHeader("content-type", "application/json")
-            ->withStatus(200);
-        }
-
-        // if(!isset($_SESSION['userLoggedInToken']) && !isset($_SESSION['userId'])) {
-            $loginRst = $this->userModelObj->logIn($mobile_no, $password);
-            if ($loginRst) {
-                if (password_verify($password, $loginRst[0])) {
-                    $tok_val = $this->token->genCSRFTkn();
-                    $this->userModelObj->addToken($mobile_no, $tok_val);
-                    $_SESSION['userLoggedInToken'] = $tok_val;
-                    $_SESSION['userLoggedInMobile'] = $mobile_no;
-                    $_SESSION['userId'] = $loginRst[1];
-                    $_SESSION['userName'] = $loginRst[2];
-
-                    $jsonMessage = array("isSuccess" => true,
-                                            "message" => "Login Success",
-                                            "Token" => $tok_val,
-                                            "userId" => $loginRst[1]);
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                } else {
-                        $jsonMessage = array("isSuccess" => false,
-                                            "message" => "Password Wrong.",
-                                            "Token" => null,
-                                            "userId" => null);
-                        $response->getBody()->write(json_encode($jsonMessage));
-                        return $response
-                        ->withHeader("content-type", "application/json")
-                        ->withStatus(200);
-                }
-            }
-            else {
+                $jsonMessage = array("isSuccess" => true,
+                                        "message" => "Login Success",
+                                        "Token" => $tok_val,
+                                        "userId" => $loginRst[1]);
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(200);
+            } else {
                     $jsonMessage = array("isSuccess" => false,
-                    "message" => "Mobile no is wrong.",
-                    "Token" => null,
-                    "userId" => null);
+                                        "message" => "Password Wrong.",
+                                        "Token" => null,
+                                        "userId" => null);
                     $response->getBody()->write(json_encode($jsonMessage));
                     return $response
                     ->withHeader("content-type", "application/json")
                     ->withStatus(200);
             }
-        // } else {
-        //     $jsonMessage = array("isSuccess" => false,
-        //     "message" => "You are already loggedIn.",
-        //     "Token" => null,
-        //     "userId" => null);
-        //     $response->getBody()->write(json_encode($jsonMessage));
-        //     return $response
-        //     ->withHeader("content-type", "application/json")
-        //     ->withStatus(200);
-        // }
-
+        } else {
+                $jsonMessage = array("isSuccess" => false,
+                "message" => "Mobile no is wrong.",
+                "Token" => null,
+                "userId" => null);
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(200);
+        }
     }
 
     public function logOut(Request $request, Response $response, $args)
@@ -240,31 +173,17 @@ class UserController
         $userId = (int)$args['userId'];
         $userExistsRst = $this->userModelObj->checkUserExists($userId);
         if ($userExistsRst) {
-            if(isset($_SESSION['userId']) && isset($_SESSION['userLoggedInToken'])) {
-                $checkLoggedIn = $this->checkUserLoggedIn($userId);
-                if ($checkLoggedIn != '') {
-                    $this->userModelObj->removeToken($userId);
-                    unset($_SESSION['userLoggedInToken']);
-                    unset($_SESSION['userLoggedInMobile']);
-                    unset($_SESSION['userId']);
-                    session_destroy();
-                    $jsonMessage = array("isSuccess" => true,
-                    "message" => "Logged Out successfully.");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                } else {
-                    $jsonMessage = array("isSuccess" => false,
-                    "message" => "User not logged in...",
-                    "Token" => null,
-                    "userId" => null);
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
-                }
-            }
+            $this->userModelObj->removeToken($userId);
+            unset($_SESSION['userLoggedInToken']);
+            unset($_SESSION['userLoggedInMobile']);
+            unset($_SESSION['userId']);
+            session_destroy();
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "Logged Out successfully.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);           
         } else {
             $jsonMessage = array("isSuccess" => false,
             "message" => "User not exists...",
@@ -284,18 +203,42 @@ class UserController
 	}
    	echo "Index Working";
     }
+
     public function updateProfile(Request $request, Response $response)
     {    
+        $userImgLink = '';
         $params = $request->getParsedBody();
-        $image = $_FILES['image'];
-        $img_name = $image['name'];
-        $img_path = $image['tmp_name'];
-        $dest = __DIR__."/../img/users/".$img_name;
-        move_uploaded_file($img_path, $dest);
-
         $name = trim($params['name'] ?? '');
         $address = trim($params['address'] ?? '');
-        $updateRst =  $this->userModelObj->updateProfile($dest, $name, $address, $_SESSION['userId']);
+        $email = trim($params['email'] ?? '');
+        $mobile_no = trim($params['mobile_no'] ?? '');
+        $user_id = (int)trim($params['user_id'] ?? '');
+
+        if (isset($_FILES['image']) && strlen($_FILES['image']['name']) != 0) {
+            $allowedExt = ['png', 'jpg', 'jpeg'];
+            $path = $_FILES['image']['name'];
+            $imgExt = pathinfo($path, PATHINFO_EXTENSION);
+
+            if (in_array($imgExt, $allowedExt)) {
+                $image = $_FILES['image'];
+                $img_name = $image['name'];
+                $img_path = $image['tmp_name'];
+                $dest = __DIR__."/../img/users/".$img_name;
+                $userImgLink = "app/img/users/".$img_name;
+                move_uploaded_file($img_path, $dest);
+            } else {
+                $jsonMessage = array("isSuccess" => false,
+                "message" => "Only images are allowed.",
+                "Token" => null,
+                "userId" => null);
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(200);
+            }
+        }
+
+        $updateRst =  $this->userModelObj->updateProfile($userImgLink, $name, $address, $email, $mobile_no, $user_id);
         if($updateRst) {
             $jsonMessage = array("isSuccess" => true,
             "message" => "Profile updated Successfully.",);
@@ -303,8 +246,14 @@ class UserController
             return $response
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
+        } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "Profile not updated.",);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
         }
-
     }
 
     public function getUserById(Request $request, Response $response, $args)
@@ -322,7 +271,7 @@ class UserController
             ->withStatus(200);
         } else {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "Sorry, no user with that id.",
+            "message" => "User not exists.",
             "user" => null);
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
@@ -337,26 +286,9 @@ class UserController
         $mobile_no = trim($params['mobile_no'] ?? '');
         $password = trim($params['password'] ?? '');
 
-        if (strlen($mobile_no) != 10) {
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "Mobile number should be of 10 digits.");
-            $response->getBody()->write(json_encode($jsonMessage));
-            return $response
-            ->withHeader("content-type", "application/json")
-            ->withStatus(200);
-        } 
-        if ($password == '') {
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "Password cann't be empty");
-            $response->getBody()->write(json_encode($jsonMessage));
-            return $response
-            ->withHeader("content-type", "application/json")
-            ->withStatus(200);
-        }
-
         $userExists = $this->userModelObj->checkUserExists($mobile_no);
         if ($userExists) {
-            $checkLoggedIn = $this->checkUserLoggedIn($mobile_no);
+            $checkLoggedIn = $this->userModelObj->checkUserLoggedIn($mobile_no);
             if($checkLoggedIn) {
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                 $updatePass = $this->userModelObj->updatePassword($mobile_no, $hashed_password);
@@ -393,5 +325,54 @@ class UserController
             ->withStatus(200);
         }
 
+    }
+
+    public function getOtp(Request $request, Response $response)
+    {
+        $params = $request->getParsedBody();
+        $mobile_no = trim($params['mobile_no'] ?? '');
+        $userId = trim($params['user_id'] ?? '');
+        $userExists = $this->userModelObj->checkUserExists($userId);
+        if ($userExists) {
+            $otp = $this->userModelObj->setOtp($userId);
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "OTP generated.",
+            "OTP" => $otp);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "User does't exists.",
+            "OTP" => null);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        }
+    }
+
+    public function verifyOtp(Request $request, Response $response)
+    {
+        $params = $request->getParsedBody();
+        $userOtp = trim($params['otp'] ?? '');
+        $userId = trim($params['user_id'] ?? '');
+        $dbOtp = $this->userModelObj->getOtp($userId);
+        if ($userOtp == $dbOtp) {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "OTP verified.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "Wrong OTP.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        }
     }
 }

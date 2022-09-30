@@ -13,6 +13,38 @@ class UserModel
         $this->conn = $conn;
     }
 
+    public function checkEmailAndMobileExists(string $email, string $mobile_no) 
+    {
+        $checkNumEmailExists = $this->conn->prepare("select * from register where email = ? or mobile_no = ?");
+        $checkNumEmailExists->bind_param("ss", $email, $mobile_no);
+        $checkNumEmailExists->execute();
+        $num = $checkNumEmailExists->get_result()->num_rows;
+        if ($num > 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public function checkUserLoggedIn(string $param)
+    {
+        if (strlen($param) == 10) {
+            $checkLoggedInStmt = $this->conn->prepare("select * from register where mobile_no = ?");
+        } else {
+            $checkLoggedInStmt = $this->conn->prepare("select * from register where id = ?");
+        }
+        $checkLoggedInStmt->bind_param("s", $param);
+        $checkLoggedInStmt->execute();
+        $checkLoggedInRst = $checkLoggedInStmt->get_result();
+        $loggedInUserDetail = $checkLoggedInRst->fetch_assoc();
+        $loggedInUserToken = $loggedInUserDetail['token'];
+        if($loggedInUserToken == '') {
+            return null;
+        } else {
+            return $loggedInUserToken;
+        }
+    }
+
     public function listUser() : array
     {
         $userQuery = $this->conn->prepare("select * from register");
@@ -70,6 +102,8 @@ class UserModel
         if($loginRst->num_rows > 0)
         {
             return [$loginValues['password'], $loginValues['id'], $loginValues['user_name']];
+        } else {
+            return false;
         }
     }
 
@@ -90,10 +124,10 @@ class UserModel
         return true;
     }
 
-    public function updateProfile(string $image, string $name,string $address,int $userId) : bool
+    public function updateProfile(string $image, string $name,string $address, String $email, String $mobile_no, int $user_id) : bool
     {
-        $updateQry = $this->conn->prepare("update register set image = ?, user_name = ?, address = ? where id = ?");
-        $updateQry->bind_param("sssi", $image, $name, $address, $userId);
+        $updateQry = $this->conn->prepare("UPDATE register set image = ?, user_name = ?, address = ?, email = ?, mobile_no = ? where id = ?");
+        $updateQry->bind_param("sssssi", $image, $name, $address, $email, $mobile_no, $user_id);
         $updateQry->execute();
         return true;
     }
@@ -141,5 +175,24 @@ class UserModel
             return false;
         }
 
+    }
+
+    public function setOtp(String $user_id)
+    {
+        $otp = (int)rand(1000,9999);
+        $setOtpStmt = $this->conn->prepare("UPDATE register set otp = ? where id = ?");
+        $setOtpStmt->bind_param("is", $otp, $user_id);
+        $setOtpStmt->execute();
+        return $otp;
+    }
+
+    public function getOtp(String $user_id)
+    {
+        $getOtpStmt = $this->conn->prepare("SELECT * from register where id = ?");
+        $getOtpStmt->bind_param("s", $user_id);
+        $getOtpStmt->execute();
+        $getOtpRst = $getOtpStmt->get_result();
+        $dbOtp = $getOtpRst->fetch_assoc();
+        return $dbOtp['otp'];
     }
 }
