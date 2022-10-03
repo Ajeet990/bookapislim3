@@ -214,6 +214,8 @@ class UserController
         $mobile_no = trim($params['mobile_no'] ?? '');
         $user_id = (int)trim($params['user_id'] ?? '');
 
+        $getUserImage = $this->userModelObj->getUser($user_id);
+        $userImgLink = $getUserImage['image'];
         if (isset($_FILES['image']) && strlen($_FILES['image']['name']) != 0) {
             $allowedExt = ['png', 'jpg', 'jpeg'];
             $path = $_FILES['image']['name'];

@@ -51,6 +51,9 @@ class BookController
         $bAuthor = trim($params['bAuthor'] ?? '');
         $edition = (int) trim($params['edition'] ?? '');
         $description = trim($params['description'] ?? '');
+        $ISBN = trim($params['ISBN'] ?? '');
+        $user_id = trim($params['user_id'] ?? '');
+
         if (isset($_FILES['bImage']) && strlen($_FILES['bImage']['name']) != 0) {
             $allowedExt = ['png', 'jpg', 'jpeg'];
             $path = $_FILES['bImage']['name'];
@@ -63,7 +66,7 @@ class BookController
                 $bookImgLink = "app/img/users/".$img_name;
                 move_uploaded_file($img_path, $bookDest);
 
-                $addBookRst = $this->bookModelObj->addBook($bName, $bookImgLink, $bGenre, $bAuthor, $edition, $description, $_SESSION['userId']);
+                $addBookRst = $this->bookModelObj->addBook($bName, $bookImgLink, $bGenre, $bAuthor, $edition, $description, $ISBN, $user_id);
         
                 if ($addBookRst) {
                     $jsonMessage = array("isSuccess" => true,
