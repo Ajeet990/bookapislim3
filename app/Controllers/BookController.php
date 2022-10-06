@@ -221,9 +221,10 @@ class BookController
 
     }
 
-    public function personalBooks(Request $request, Response $response)
+    public function personalBooks(Request $request, Response $response, $args)
     {
-        $personalBooks = $this->bookModelObj->getPersonalBooks($_SESSION['userId']);
+        $userId = (int)$args['userId'];
+        $personalBooks = $this->bookModelObj->getPersonalBooks($userId);
         if (count($personalBooks) > 0) {
             $jsonMessage = array("isSuccess" => true,
                                     "message" => "My books",
