@@ -195,4 +195,21 @@ class UserModel
         $dbOtp = $getOtpRst->fetch_assoc();
         return $dbOtp['otp'];
     }
+
+    public function getLang()
+    {
+        $getLangStmt = $this->conn->prepare("SELECT * from language");
+        $getLangStmt->execute();
+        $getLangRst = $getLangStmt->get_result();
+        $getLang = $getLangRst->fetch_all(MYSQLI_ASSOC);
+        return $getLang;
+    }
+    public function getGenre()
+    {
+        $getGenreStmt = $this->conn->prepare("SELECT * from genre");
+        $getGenreStmt->execute();
+        $getGenreRst = $getGenreStmt->get_result();
+        $getGenre = $getGenreRst->fetch_all(MYSQLI_ASSOC);
+        return $getGenre;
+    }
 }

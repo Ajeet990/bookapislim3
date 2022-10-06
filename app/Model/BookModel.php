@@ -17,10 +17,10 @@ class BookModel
         return $bookLists;
     }
 
-    public function addBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $description, string $ISBN, int $ownerId) : bool
+    public function addBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, String $publisher, string $description, string $ISBN, int $ownerId) : bool
     {
-        $addBookQry = $this->conn->prepare("INSERT INTO books (book_name, image, genre, author, edition, description, isbn, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $addBookQry->bind_param("ssssissi", $bName, $bookDest, $bGenre, $bAuthor, $edition, $description, $ISBN, $ownerId);
+        $addBookQry = $this->conn->prepare("INSERT INTO books (book_name, image, genre, author, edition, publisher, description, isbn, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $addBookQry->bind_param("ssssisssi", $bName, $bookDest, $bGenre, $bAuthor, $edition, $publisher, $description, $ISBN, $ownerId);
         $addBookQry->execute();
         if ($addBookQry) {
             return true;

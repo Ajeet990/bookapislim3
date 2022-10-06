@@ -10,6 +10,8 @@ $app->get('/tokenGen', 'tokenGen:genCSRFTkn');
 $app->post('/signUp', 'UserHelper:signUp');
 $app->post('/logIn', 'UserHelper:logIn');
 $app->get('/bookList', 'BookHelper:listAllBooks');
+$app->get('/getLang', 'UserHelper:getLanguage');
+$app->get('/getGenre', 'UserHelper:getGenre');
 
 $app->group('', function() use ($app) {
     //End point related to user

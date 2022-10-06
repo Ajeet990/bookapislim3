@@ -366,4 +366,28 @@ class UserController
             ->withStatus(200);
         }
     }
+    public function getLanguage(Request $request, Response $response)
+    {
+        $lang = $this->userModelObj->getLang();
+        $jsonMessage = array("isSuccess" => true,
+        "message" => "List of languages.",
+        "languages" => $lang);
+        $response->getBody()->write(json_encode($jsonMessage));
+        return $response
+        ->withHeader("content-type", "application/json")
+        ->withStatus(200);
+
+    }
+    public function getGenre(Request $request, Response $response)
+    {
+        $genre = $this->userModelObj->getGenre();
+        $jsonMessage = array("isSuccess" => true,
+        "message" => "List of Genres.",
+        "genres" => $genre);
+        $response->getBody()->write(json_encode($jsonMessage));
+        return $response
+        ->withHeader("content-type", "application/json")
+        ->withStatus(200);
+
+    }
 }
