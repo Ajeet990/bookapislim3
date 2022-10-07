@@ -110,12 +110,14 @@ class BookController
         $bGenre = trim($params['bGenre'] ?? '');
         $bAuthor = trim($params['bAuthor'] ?? '');
         $edition = (int)trim($params['bEdition'] ?? '');
+        $publisher = trim($params['publisher'] ?? '');
+        $ISBN = trim($params['ISBN'] ?? '');
         $description = trim($params['description'] ?? '');
         $bookId = (int)$args['bookId'];
         $bookExists = $this->bookModelObj->checkBookExists($bookId);
         if (!$bookExists) {
             $jsonMessage = array("isSuccess" => false,
-            "message" => " Failed.... Book doesn't exist.");
+            "message" => "Book doesn't exist.");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
@@ -134,7 +136,7 @@ class BookController
                 $bookImgLink = "app/img/users/".$img_name;
                 move_uploaded_file($img_path, $bookDest);
 
-                $editRst = $this->bookModelObj->updateBook($bName, $bookImgLink, $bGenre, $bAuthor, $edition, $description, $bookId);
+        $editRst = $this->bookModelObj->updateBook($bName, $bookImgLink, $bGenre, $bAuthor, $edition, $publisher, $ISBN, $description, $bookId);
                 if($editRst) {
                     $jsonMessage = array("isSuccess" => true,
                                         "message" => "Book Updated");
@@ -232,14 +234,14 @@ class BookController
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(401);
+            ->withStatus(200);
         } else {
             $jsonMessage = array("isSuccess" => false,
             "message" => "No personal books");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(401);
+            ->withStatus(200);
         }
     }
 

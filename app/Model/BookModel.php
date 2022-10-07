@@ -29,10 +29,10 @@ class BookModel
         }
     }
 
-    public function updateBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $description, int $bookId) : bool
+    public function updateBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $publisher, string $ISBN, string $description, int $bookId) : bool
     {
-        $updateQry = $this->conn->prepare("update books set book_name = ?, image = ?, genre = ?, author = ?, edition = ?, description = ? where id = ?");
-        $updateQry->bind_param("ssssisi", $bName, $bookDest, $bGenre, $bAuthor, $edition, $description, $bookId);
+        $updateQry = $this->conn->prepare("update books set book_name = ?, image = ?, genre = ?, author = ?, edition = ?, publisher = ?, isbn = ?, description = ? where id = ?");
+        $updateQry->bind_param("ssssisssi", $bName, $bookDest, $bGenre, $bAuthor, $edition, $publisher, $ISBN, $description, $bookId);
         $updateQry->execute();
         if ($updateQry) {         
             return true;
@@ -47,7 +47,7 @@ class BookModel
         $checkQry->bind_param("i", $bookId);
         $checkQry->execute();
         if ($checkQry->get_result()->num_rows > 0) {
-            $dltQry = $this->conn->prepare("DELETE from BOOKS where id = ?");
+            $dltQry = $this->conn->prepare("delete from books where id = ?");
             $dltQry->bind_param("i", $bookId);
             $dltQry->execute();
             return true;
@@ -93,10 +93,10 @@ class BookModel
 
     public function searchBook($search)
     {
-        $bookName = "%$search%";
+        $book = "%$search%";
         $searchBooks = array();
-        $searchQry = $this->conn->prepare("select * from books where book_name LIKE ?");
-        $searchQry->bind_param("s", $bookName);
+        $searchQry = $this->conn->prepare("select * from books where book_name LIKE ? OR author LIKE ? OR isbn LIKE ?");
+        $searchQry->bind_param("sss", $book, $book, $book);
         $searchQry->execute();
         $searchBooks = $searchQry->get_result()->fetch_all(MYSQLI_ASSOC);
         return $searchBooks;
