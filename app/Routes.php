@@ -9,27 +9,27 @@ $app->get('/users', 'UserHelper:userList');
 $app->get('/tokenGen', 'tokenGen:genCSRFTkn');
 $app->post('/signUp', 'UserHelper:signUp');
 $app->post('/logIn', 'UserHelper:logIn');
-$app->get('/bookList', 'BookHelper:listAllBooks');
+$app->post('/bookList', 'BookHelper:bookList');
 $app->get('/getLang', 'UserHelper:getLanguage');
 $app->get('/getGenre', 'UserHelper:getGenre');
 
 $app->group('', function() use ($app) {
     //End point related to user
+    $app->post('/addUpdateUser/{userId}', 'UserHelper:addUpdate');
     $app->post('/getOtp', 'UserHelper:getOtp');
     $app->post('/verifyOtp', 'UserHelper:verifyOtp');
     $app->get('/logOut/{userId}', 'UserHelper:logOut');
-    $app->post('/updateProfile', 'UserHelper:updateProfile');
     $app->get('/getUserById/{userId}', 'UserHelper:getUserById');
     $app->post('/resetPass', 'UserHelper:resetPassword');
     
     //End point related to books.
     $app->get('/getBookById/{bookId}', 'BookHelper:getBookById');
-    $app->post('/addBook', 'BookHelper:addBook');
+    $app->post('/addUpdateBook/{bookId}', 'BookHelper:addUpdate');
     $app->post('/updateBook/{bookId}', 'BookHelper:updateBook');
     $app->post('/deleteBook/{bookId}', 'BookHelper:deleteBook');
     $app->post('/bookFeedback/{bookId}', 'BookHelper:bookFeedback');
     $app->get('/personalBooks/{userId}', 'BookHelper:personalBooks');
-    $app->get('/searchBook/{searchString}','BookHelper:searchBook');
+    // $app->get('/searchBook/{searchString}','BookHelper:searchBook');
 
 
     //End point related to request

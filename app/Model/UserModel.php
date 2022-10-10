@@ -3,7 +3,7 @@ namespace App\Model;
 class UserModel
 {
     public const STATUS = 'active';
-    // public const TOKEN = '';
+    public const TOKEN = '0';
     public const USER_TYPE = 0; //for normal user
 
     protected $conn;
@@ -59,16 +59,14 @@ class UserModel
         string $address,
         string $email,
         string $password,
-        string $dest,
+        string $userImg,
         string $token
     ) : bool
     {
         $status = UserModel::STATUS;
         $userType = UserModel::USER_TYPE;
-        $signUpStmt = $this->conn->prepare("INSERT INTO register 
-        (image, user_name, mobile_no, address, email, password, status, token, user_type)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $signUpStmt->bind_param("ssssssssi", $dest, $name, $mobile_no, $address, $email, $password, $status, $token, $userType,);
+        $signUpStmt = $this->conn->prepare("insert into register (image, user_name, mobile_no, address, email, password, status, token, user_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $signUpStmt->bind_param("ssssssssi", $userImg, $name, $mobile_no, $address, $email, $password, $status, $token, $userType);
         $signUpRst = $signUpStmt->execute();
         if ($signUpRst) {
             return true;
@@ -77,12 +75,12 @@ class UserModel
         }
     }
 
-    public function logInAtSignUp(string $mobile_no, string $tok_val) 
+    public function logInAtSignUp(string $mobile_no) 
     {
-
         $getUserDetailStmt = $this->conn->prepare("SELECT * from register where mobile_no = ?");
         $getUserDetailStmt->bind_param("s", $mobile_no);
         $getUserDetailStmt->execute();
+        $lastId = (int)$getUserDetailStmt->insert_id;
         $getUserDetailsRst = $getUserDetailStmt->get_result();
         $logInDetails = $getUserDetailsRst->fetch_assoc();
         if ($getUserDetailsRst->num_rows > 0) {

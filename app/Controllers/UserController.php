@@ -33,26 +33,26 @@ class UserController
                 ->withHeader("content-type", "application/json")
                 ->withStatus(200);
     }
-
-    public function signUp(Request $request, Response $response)
-    {      
-        $userImgLink = '0';
+    public function addUpdate(Request $request, Response $response, $args)
+    {
+        $userId = (int)$args['userId'];
         $params = $request->getParsedBody();
-                                
         $name = trim($params['name'] ?? '');
         $mobile_no = trim($params['mobile_no'] ?? '');
         $address = trim($params['address'] ?? '');
         $email = trim($params['email'] ?? '');
         $password = trim($params['password'] ?? '');
+        $userImgLink = "0";
 
+        if ($userId == 0) {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
         $validation = $this->userModelObj->checkEmailAndMobileExists($email, $mobile_no);
-        if ($validation) {   
+        if ($validation) {
+            $tok_val = $this->token->genCSRFTkn();
             if (isset($_FILES['image']) && strlen($_FILES['image']['name']) != 0) {
                 $allowedExt = ['png', 'jpg', 'jpeg'];
-                $path = $_FILES['image']['name'];
-                $imgExt = pathinfo($path, PATHINFO_EXTENSION);
+                $imgName = $_FILES['image']['name'];
+                $imgExt = pathinfo($imgName, PATHINFO_EXTENSION);
 
                 if (in_array($imgExt, $allowedExt)) {
                     $image = $_FILES['image'];
@@ -72,12 +72,10 @@ class UserController
                     ->withStatus(200);
                 }
             }
-            $tok_val = $this->token->genCSRFTkn();
-            $signUpRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $userImgLink, $tok_val);
-            if ($signUpRst) {
-                $loginRst = $this->userModelObj->logInAtSignUp($mobile_no, $tok_val);
+            $signRst = $this->userModelObj->signUp($name, $mobile_no, $address, $email, $hashed_password, $userImgLink, $tok_val);
+            if ($signRst) {
+                $loginRst = $this->userModelObj->logInAtSignUp($mobile_no);
                 if ($loginRst) {
-
                     $_SESSION['userLoggedInToken'] = $tok_val;
                     $_SESSION['userLoggedInMobile'] = $mobile_no;
                     $_SESSION['userId'] = $loginRst[0];
@@ -91,26 +89,11 @@ class UserController
                     return $response
                     ->withHeader("content-type", "application/json")
                     ->withStatus(200);
-                } else {
-                    $jsonMessage = array("isSuccess" => false,
-                    "message" => "Something error occured, during login.",
-                    "Token" => null,
-                    "userId" => null);
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(200);
+
                 }
-            } else {
-                $jsonMessage = array("isSuccess" => false,
-                "message" => "Something error occured, during signUp",
-                "Token" => null,
-                "userId" => null);
-                $response->getBody()->write(json_encode($jsonMessage));
-                return $response
-                ->withHeader("content-type", "application/json")
-                ->withStatus(200);
-            } 
+            }
+
+        //Updating profile
         } else {
             $jsonMessage = array("isSuccess" => false,
             "message" => "Phone or email already exists.",
@@ -120,8 +103,47 @@ class UserController
             return $response
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
-        }    
+        }
+        } else {
+            $getUserImage = $this->userModelObj->getUser($userId);
+            $userImgLink = $getUserImage['image'];
+            if (isset($_FILES['image']) && strlen($_FILES['image']['name']) != 0) {
+                $allowedExt = ['png', 'jpg', 'jpeg'];
+                $imgName = $_FILES['image']['name'];
+                $imgExt = pathinfo($imgName, PATHINFO_EXTENSION);
+
+                if (in_array($imgExt, $allowedExt)) {
+                    $image = $_FILES['image'];
+                    $img_name = $image['name'];
+                    $img_path = $image['tmp_name'];
+                    $dest = __DIR__."/../img/users/".$img_name;
+                    $userImgLink = "app/img/users/".$img_name;
+                    move_uploaded_file($img_path, $dest);
+                } else {
+                    $jsonMessage = array("isSuccess" => false,
+                    "message" => "Only images are allowed.",
+                    "Token" => null,
+                    "userId" => null);
+                    $response->getBody()->write(json_encode($jsonMessage));
+                    return $response
+                    ->withHeader("content-type", "application/json")
+                    ->withStatus(200);
+                }
+            }
+            $updateRst = $this->userModelObj->updateProfile($userImgLink, $name, $address, $email, $mobile_no, $userId);
+            if ($updateRst) {
+                $jsonMessage = array("isSuccess" => true,
+                "message" => "Profile updated Successfully.",);
+                $response->getBody()->write(json_encode($jsonMessage));
+                return $response
+                ->withHeader("content-type", "application/json")
+                ->withStatus(200);
+
+            }
+        }
     }
+
+    
 
     public function logIn(Request $request, Response $response)
     {
@@ -204,59 +226,7 @@ class UserController
    	echo "Index Working";
     }
 
-    public function updateProfile(Request $request, Response $response)
-    {    
-        $userImgLink = '';
-        $params = $request->getParsedBody();
-        $name = trim($params['name'] ?? '');
-        $address = trim($params['address'] ?? '');
-        $email = trim($params['email'] ?? '');
-        $mobile_no = trim($params['mobile_no'] ?? '');
-        $user_id = (int)trim($params['user_id'] ?? '');
-
-        $getUserImage = $this->userModelObj->getUser($user_id);
-        $userImgLink = $getUserImage['image'];
-        if (isset($_FILES['image']) && strlen($_FILES['image']['name']) != 0) {
-            $allowedExt = ['png', 'jpg', 'jpeg'];
-            $path = $_FILES['image']['name'];
-            $imgExt = pathinfo($path, PATHINFO_EXTENSION);
-
-            if (in_array($imgExt, $allowedExt)) {
-                $image = $_FILES['image'];
-                $img_name = $image['name'];
-                $img_path = $image['tmp_name'];
-                $dest = __DIR__."/../img/users/".$img_name;
-                $userImgLink = "app/img/users/".$img_name;
-                move_uploaded_file($img_path, $dest);
-            } else {
-                $jsonMessage = array("isSuccess" => false,
-                "message" => "Only images are allowed.",
-                "Token" => null,
-                "userId" => null);
-                $response->getBody()->write(json_encode($jsonMessage));
-                return $response
-                ->withHeader("content-type", "application/json")
-                ->withStatus(200);
-            }
-        }
-
-        $updateRst =  $this->userModelObj->updateProfile($userImgLink, $name, $address, $email, $mobile_no, $user_id);
-        if($updateRst) {
-            $jsonMessage = array("isSuccess" => true,
-            "message" => "Profile updated Successfully.",);
-            $response->getBody()->write(json_encode($jsonMessage));
-            return $response
-            ->withHeader("content-type", "application/json")
-            ->withStatus(200);
-        } else {
-            $jsonMessage = array("isSuccess" => false,
-            "message" => "Profile not updated.",);
-            $response->getBody()->write(json_encode($jsonMessage));
-            return $response
-            ->withHeader("content-type", "application/json")
-            ->withStatus(200);
-        }
-    }
+    
 
     public function getUserById(Request $request, Response $response, $args)
     {
