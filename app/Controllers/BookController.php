@@ -31,32 +31,34 @@ class BookController
             if ($bookLists) {
                 $jsonMessage = array("isSuccess" => true,
                                         "message" => "List of books",
-                                        "list" => $bookLists);
+                                        "book" => $bookLists);
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                         ->withHeader("content-type", "application/json")
                         ->withStatus(200);
             } else {
                 $jsonMessage = array("isSuccess" => false,
-                "message" => "Something went wrong.");
+                "message" => "Something went wrong.",
+                "book" => null);
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")
-                ->withStatus(500);
+                ->withStatus(200);
             }
         } else {          
             $searchRst = $this->bookModelObj->searchBook($search);
             if(count($searchRst) > 0) {
                 $jsonMessage = array("isSuccess" => true,
-                "message" => "List of searching books.",
-                "books" => $searchRst);
+                "message" => "List of books.",
+                "book" => $searchRst);
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")
                 ->withStatus(200);
             } else {
-                $jsonMessage = array("isSuccess" => true,
-                "message" => "No books found.");
+                $jsonMessage = array("isSuccess" => false,
+                "message" => "No books found.",
+                "book" => null);
                 $response->getBody()->write(json_encode($jsonMessage));
                 return $response
                 ->withHeader("content-type", "application/json")
