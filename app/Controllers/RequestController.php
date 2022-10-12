@@ -24,14 +24,13 @@ class RequestController
     }
 
     public function requestBook(Request $request, Response $response, $args)
-    {
-    
-        $bookId = $args['bookId'];
+    {  
+        $bookId = (int)$args['bookId'];
         $Date = date("Y-m-d");
         $params = $request->getParsedBody();
-        $rqstBookReason = trim($params['reason'] ?? '');
-
-        $rqstBookRst = $this->requestModelObj->RequestBook( $_SESSION['userId'],$bookId,$rqstBookReason, $Date);
+        $requesterId = (int)trim($params['requester_id'] ?? '');
+        $bookOwner = (int)trim($params['book_owner'] ?? '');
+        $rqstBookRst = $this->requestModelObj->RequestBook($bookId, $requesterId, $bookOwner, $Date);
         if($rqstBookRst) {
             $jsonMessage = array("isSuccess" => true,
             "message" => "Requested successfully.");
@@ -39,9 +38,7 @@ class RequestController
             return $response
             ->withHeader("content-type", "application/json")
             ->withStatus(401);
-        }
-                
-
+        }               
     }
 
     public function listReceivedRequest(Request $request, Response $response)

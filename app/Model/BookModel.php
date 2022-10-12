@@ -17,10 +17,10 @@ class BookModel
         return $bookLists;
     }
 
-    public function addBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, String $publisher, string $description, string $ISBN, int $ownerId) : bool
+    public function addBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, String $publisher, string $description, string $rating, string $ISBN, int $ownerId) : bool
     {
-        $addBookQry = $this->conn->prepare("INSERT INTO books (book_name, image, genre, author, edition, publisher, description, isbn, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $addBookQry->bind_param("ssssisssi", $bName, $bookDest, $bGenre, $bAuthor, $edition, $publisher, $description, $ISBN, $ownerId);
+        $addBookQry = $this->conn->prepare("INSERT INTO books (book_name, image, genre, author, edition, publisher, description, rating, isbn, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $addBookQry->bind_param("ssssissssi", $bName, $bookDest, $bGenre, $bAuthor, $edition, $publisher, $description, $rating, $ISBN, $ownerId);
         $addBookQry->execute();
         if ($addBookQry) {
             return true;
@@ -29,10 +29,10 @@ class BookModel
         }
     }
 
-    public function updateBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $publisher, string $ISBN, string $description, int $bookId) : bool
+    public function updateBook(string $bName, string $bookDest, string $bGenre, string $bAuthor, int $edition, string $publisher, string $ISBN, string $description, string $rating, int $bookId) : bool
     {
-        $updateQry = $this->conn->prepare("update books set book_name = ?, image = ?, genre = ?, author = ?, edition = ?, publisher = ?, isbn = ?, description = ? where id = ?");
-        $updateQry->bind_param("ssssisssi", $bName, $bookDest, $bGenre, $bAuthor, $edition, $publisher, $ISBN, $description, $bookId);
+        $updateQry = $this->conn->prepare("update books set book_name = ?, image = ?, genre = ?, author = ?, edition = ?, publisher = ?, isbn = ?, description = ?, rating = ? where id = ?");
+        $updateQry->bind_param("ssssissssi", $bName, $bookDest, $bGenre, $bAuthor, $edition, $publisher, $ISBN, $description, $rating, $bookId);
         $updateQry->execute();
         if ($updateQry) {         
             return true;

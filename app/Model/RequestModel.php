@@ -15,16 +15,11 @@ class RequestModel
         $this->conn = $conn;
     }
 
-    public function RequestBook(string $requesterId, string $bookId, string $rqstBookReason, string $date) : bool
+    public function RequestBook(int $bookId, int $requesterId, int $ownerId, string $date) : bool
     {
-        $bookOwnerStmt = $this->conn->prepare("select owner_id from books where id = ?");
-        $bookOwnerStmt->bind_param("s",$bookId);
-        $bookOwnerStmt->execute();
-        $owner = $bookOwnerStmt->get_result()->fetch_assoc();
-        $ownerId = $owner['owner_id'];
         $status = RequestModel::PENDING_STATUS;
-        $insertRqst = $this->conn->prepare("INSERT INTO request(requester_id, owner_id, book_id, reason, status, rqst_date) VALUES (?, ?, ?, ?, ?, ?)");
-        $insertRqst->bind_param("ssssis", $requesterId, $ownerId, $bookId, $rqstBookReason, $status, $date);
+        $insertRqst = $this->conn->prepare("INSERT INTO request(requester_id, owner_id, book_id, status, rqst_date) VALUES (?, ?, ?, ?, ?)");
+        $insertRqst->bind_param("iiiis", $requesterId, $ownerId, $bookId, $status, $date);
         $insertRqst->execute();
         return true;
 
