@@ -121,4 +121,14 @@ class BookModel
             return false;
         }
     }
+
+    public function getFeedBackList(int $bookId)
+    {
+        $getFeedStmt = $this->conn->prepare("select * from feedback where book_id = ?");
+        $getFeedStmt->bind_param("i", $bookId);
+        $getFeedStmt->execute();
+        $getFeedRst = $getFeedStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        return $getFeedRst;
+
+    }
 }

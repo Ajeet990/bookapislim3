@@ -28,6 +28,7 @@ $app->group('', function() use ($app) {
     $app->post('/updateBook/{bookId}', 'BookHelper:updateBook');
     $app->post('/deleteBook/{bookId}', 'BookHelper:deleteBook');
     $app->post('/bookFeedback/{bookId}', 'BookHelper:bookFeedback');
+    $app->get('/getFeedbackList/{bookId}', 'BookHelper:getFeedBackList');
     $app->post('/personalBooks/{userId}', 'BookHelper:personalBooks');
     // $app->get('/searchBook/{searchString}','BookHelper:searchBook');
 

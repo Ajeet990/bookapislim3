@@ -298,5 +298,29 @@ class BookController
         }
     }
 
+    public function getFeedBackList(Request $request, Response $response, $args)
+    {
+        $bookId = (int)$args['bookId'];
+        $feedList = $this->bookModelObj->getFeedBackList($bookId);
+        if (count($feedList) > 0) {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "Feedback list.",
+            "feedList" => $feedList);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+
+        } else {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "No feedback to this book.",
+            "feedList" => null);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        }
+    }
+
 
 }
