@@ -82,10 +82,16 @@ class BookModel
         }
     }
 
-    public function getPersonalBooks(int $userId)
+    public function getPersonalBooks(int $userId, string $search) : array
     {
-        $personalBooks = $this->conn->prepare("select * from books where owner_id = ?");
-        $personalBooks->bind_param("s", $userId);
+        if ($search == '') {
+            $personalBooks = $this->conn->prepare("select * from books where owner_id = ? order by book_name");
+            $personalBooks->bind_param("s", $userId);
+        } else {
+            $search_qry = "%$search%";
+            $personalBooks = $this->conn->prepare("select * from books where (book_name LIKE ? OR author LIKE ? OR isbn LIKE ?) and (owner_id = ?) order by book_name");
+            $personalBooks->bind_param("sssi", $search_qry, $search_qry, $search_qry, $userId);
+        }
         $personalBooks->execute();
         $myBooks = $personalBooks->get_result()->fetch_all(MYSQLI_ASSOC);
         return $myBooks;

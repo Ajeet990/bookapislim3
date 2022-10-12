@@ -240,18 +240,21 @@ class BookController
     public function personalBooks(Request $request, Response $response, $args)
     {
         $userId = (int)$args['userId'];
-        $personalBooks = $this->bookModelObj->getPersonalBooks($userId);
+        $params = $request->getParsedBody();   
+        $search = trim($params['search'] ?? '');
+        $personalBooks = $this->bookModelObj->getPersonalBooks($userId, $search);
         if (count($personalBooks) > 0) {
             $jsonMessage = array("isSuccess" => true,
                                     "message" => "My books",
-                                    "books" => $personalBooks);
+                                    "book" => $personalBooks);
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
             ->withStatus(200);
         } else {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "No personal books");
+            "message" => "No personal books",
+            "book" => null);
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
