@@ -70,10 +70,10 @@ class BookModel
     }
 
 
-    public function bookFeedback(string $userId, string $userName, string $message, string $bookId) : bool
+    public function bookFeedback(int $userId, string $message, int $bookId) : bool
     {
-        $insrtBookFeedback = $this->conn->prepare("insert into feedback(commenter_name, feedback, user_id, book_id) VALUES (?, ?, ?, ?)");
-        $insrtBookFeedback->bind_param("ssss", $userName, $message, $userId, $bookId);
+        $insrtBookFeedback = $this->conn->prepare("insert into feedback(feedback, user_id, book_id) VALUES (?, ?, ?)");
+        $insrtBookFeedback->bind_param("sii", $message, $userId, $bookId);
         $insrtBookFeedback->execute();
         if ($insrtBookFeedback) {
             return true;

@@ -209,15 +209,14 @@ class BookController
 
     public function bookFeedback(Request $request, Response $response, $args)
     {
-
-        $bookId = $args['bookId'];
+        $bookId = (int)$args['bookId'];
+        $params = $request->getParsedBody();   
+        $commenter_id = (int)trim($params['user_id'] ?? '');
+        $feedMessage = trim($params['message'] ?? '');
         $bookExistsRst = $this->bookModelObj->checkBookExists($bookId);
         
         if($bookExistsRst) {
-            $params = $request->getParsedBody();
-            $feedMessage = trim($params['message'] ?? '');
-
-            $bookFeedRst = $this->bookModelObj->bookFeedback($_SESSION['userId'], $_SESSION['userName'], $feedMessage, $bookId);
+            $bookFeedRst = $this->bookModelObj->bookFeedback($commenter_id, $feedMessage, $bookId);
             if($bookFeedRst) {
                 $jsonMessage = array("isSuccess" => true,
                 "message" => "Feedback submitted.");
