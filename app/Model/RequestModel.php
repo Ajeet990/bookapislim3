@@ -8,6 +8,8 @@ class RequestModel
     public const RETURNING_STATUS = 2;
     public const RETURNED_STATUS = 3;
     public const REJECTED_STATUS = 4;
+    public const ISSUED_DATE = "0000-00-00";
+    public const RETURN_DATE = "0000-00-00";
     protected $conn;
     
     public function __construct($conn)
@@ -18,10 +20,16 @@ class RequestModel
     public function RequestBook(int $bookId, int $requesterId, int $ownerId, string $date) : bool
     {
         $status = RequestModel::PENDING_STATUS;
-        $insertRqst = $this->conn->prepare("INSERT INTO request(requester_id, owner_id, book_id, status, rqst_date) VALUES (?, ?, ?, ?, ?)");
-        $insertRqst->bind_param("iiiis", $requesterId, $ownerId, $bookId, $status, $date);
+        $issued_date = RequestModel::ISSUED_DATE;
+        $return_date = RequestModel::RETURN_DATE;
+        $insertRqst = $this->conn->prepare("insert ignore into request(requester_id, owner_id, book_id, status, rqst_date, issued_date, return_date) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $insertRqst->bind_param("iiiisss", $requesterId, $ownerId, $bookId, $status, $date, $issued_date, $return_date);
         $insertRqst->execute();
-        return true;
+        if ($insertRqst->insert_id > 0) {
+            return true;
+        } else {
+            return false;
+        }
 
     }
 

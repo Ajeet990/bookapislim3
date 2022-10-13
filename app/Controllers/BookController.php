@@ -322,5 +322,33 @@ class BookController
         }
     }
 
+    public function deleteFeed(Request $request, Response $response)
+    {
+        $params = $request->getParsedBody();
+        $feedId = (int)trim($params['feed_id'] ?? '');
+        $userId = (int)trim($params['user_id'] ?? '');
+        $bookId = (int)trim($params['book_id'] ?? '');
+
+        $deleteFeedRst = $this->bookModelObj->deleteFeed($feedId, $userId, $bookId);
+        if ($deleteFeedRst) {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "Feed deleted");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+
+        } else {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "Sorry not able to delete");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        }
+
+
+    }
+
 
 }

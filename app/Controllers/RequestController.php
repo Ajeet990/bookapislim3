@@ -26,26 +26,33 @@ class RequestController
     public function requestBook(Request $request, Response $response, $args)
     {  
         $bookId = (int)$args['bookId'];
-        $Date = date("Y-m-d");
+        $reqst_date = date("Y-m-d");
         $params = $request->getParsedBody();
         $requesterId = (int)trim($params['requester_id'] ?? '');
         $bookOwner = (int)trim($params['book_owner'] ?? '');
-        $rqstBookRst = $this->requestModelObj->RequestBook($bookId, $requesterId, $bookOwner, $Date);
+        $rqstBookRst = $this->requestModelObj->RequestBook($bookId, $requesterId, $bookOwner, $reqst_date);
         if($rqstBookRst) {
             $jsonMessage = array("isSuccess" => true,
             "message" => "Requested successfully.");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(401);
-        }               
+            ->withStatus(200);
+        } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "failed book request.");
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        }            
     }
 
-    public function listReceivedRequest(Request $request, Response $response)
+    public function listReceivedRequest(Request $request, Response $response, $args)
     {
-
+        $userId = (int)$args['userId'];
         //getting all the request done by the users.
-        $listRequest = $this->requestModelObj->listRequests($_SESSION['userId']);
+        $listRequest = $this->requestModelObj->listRequests($userId);
         if(count($listRequest) > 0) {
             // function to formate the message in profer form to display.
             $formatedMessage = $this->requestModelObj->formateReceivedRqstMessage($listRequest);
@@ -66,27 +73,28 @@ class RequestController
         }
     }
 
-    public function listSentRequest(Request $request, Response $response)
+    public function listSentRequest(Request $request, Response $response, $args)
     {
-    
-                $listSentRst = $this->requestModelObj->listSentRequest($_SESSION['userId']);
-                if(count($listSentRst) > 0){
-                    $formatedMessage = $this->requestModelObj->formateSentRqstMsg($listSentRst);
-                    $jsonMessage = array("isSuccess" => true,
-                    "message" => "List of request sent by you.",
-                    "request" => $formatedMessage);
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(401);
-                } else {
-                    $jsonMessage = array("isSuccess" => true,
-                    "message" => "No requests done till now.");
-                    $response->getBody()->write(json_encode($jsonMessage));
-                    return $response
-                    ->withHeader("content-type", "application/json")
-                    ->withStatus(401);
-                }
+        $userId = (int)$args['userId'];   
+        $listSentRst = $this->requestModelObj->listSentRequest($userId);
+        if(count($listSentRst) > 0){
+            $formatedMessage = $this->requestModelObj->formateSentRqstMsg($listSentRst);
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "List of request sent by you.",
+            "requests" => $formatedMessage);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        } else {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "No requests done till now.",
+            "requests" => null);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        }
 
 
     }
@@ -102,7 +110,7 @@ class RequestController
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(401);
+            ->withStatus(200);
         }
     }
 
@@ -118,7 +126,7 @@ class RequestController
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")
-            ->withStatus(401);
+            ->withStatus(200);
         }
     }
 

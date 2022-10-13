@@ -133,4 +133,18 @@ class BookModel
         $getFeedRst = $getFeedStmt->get_result()->fetch_all(MYSQLI_ASSOC);
         return $getFeedRst;
     }
+
+    public function deleteFeed(int $feedId, int $userId, int $bookId)
+    {
+        $deleteFeedStmt = $this->conn->prepare("delete from feedback where id = ? and user_id = ? and book_id = ?");
+        $deleteFeedStmt->bind_param("iii", $feedId, $userId, $bookId);
+        $deleteFeedStmt->execute();
+
+        if ($deleteFeedStmt->affected_rows > 0) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
 }

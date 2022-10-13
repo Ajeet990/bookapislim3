@@ -29,14 +29,15 @@ $app->group('', function() use ($app) {
     $app->post('/deleteBook/{bookId}', 'BookHelper:deleteBook');
     $app->post('/bookFeedback/{bookId}', 'BookHelper:bookFeedback');
     $app->get('/getFeedbackList/{bookId}', 'BookHelper:getFeedBackList');
+    $app->post('/deleteFeed', 'BookHelper:deleteFeed');
     $app->post('/personalBooks/{userId}', 'BookHelper:personalBooks');
     // $app->get('/searchBook/{searchString}','BookHelper:searchBook');
 
 
     //End point related to request
     $app->post('/requestBook/{bookId}', 'RequestHelper:requestBook');
-    $app->get('/listReceivedRequest', 'RequestHelper:listReceivedRequest');
-    $app->get('/listSentRequest', 'RequestHelper:listSentRequest');
+    $app->get('/listReceivedRequest/{userId}', 'RequestHelper:listReceivedRequest');
+    $app->get('/listSentRequest/{userId}', 'RequestHelper:listSentRequest');
     $app->post('/grantIssueRequest/{requestingId}', 'RequestHelper:grantIssueRequest');
     $app->post('/cancelIssueRequest/{requestingId}', 'RequestHelper:cancelIssueRequest');
     $app->post('/returnBookRequest/{requestingId}', 'RequestHelper:returnBookRequest');
