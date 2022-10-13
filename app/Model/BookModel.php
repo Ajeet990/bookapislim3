@@ -124,11 +124,13 @@ class BookModel
 
     public function getFeedBackList(int $bookId)
     {
-        $getFeedStmt = $this->conn->prepare("select * from feedback where book_id = ?");
+        $getFeedStmt = $this->conn->prepare("select f.*, r.user_name as commenter_name
+        from feedback as f
+        inner join register as r on f.user_id = r.id
+        where book_id = ?");
         $getFeedStmt->bind_param("i", $bookId);
         $getFeedStmt->execute();
         $getFeedRst = $getFeedStmt->get_result()->fetch_all(MYSQLI_ASSOC);
         return $getFeedRst;
-
     }
 }
