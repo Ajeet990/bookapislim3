@@ -94,7 +94,7 @@ class BookController
                     $img_name = $bImage['name'];
                     $img_path = $bImage['tmp_name'];
                     $bookDest = __DIR__."/../img/books/".$img_name;
-                    $bookImgLink = "app/img/users/".$img_name;
+                    $bookImgLink = "app/img/books/".$img_name;
                     move_uploaded_file($img_path, $bookDest);
     
                     $addBookRst = $this->bookModelObj->addBook($bName, $bookImgLink, $bGenre, $bAuthor, $edition, $publisher, $description, $rating, $ISBN, $user_id);
@@ -154,7 +154,7 @@ class BookController
                     $img_name = $bImage['name'];
                     $img_path = $bImage['tmp_name'];
                     $bookDest = __DIR__."/../img/books/".$img_name;
-                    $bookImgLink = "app/img/users/".$img_name;
+                    $bookImgLink = "app/img/books/".$img_name;
                     move_uploaded_file($img_path, $bookDest);
                 } else {
                     $jsonMessage = array("isSuccess" => false,
