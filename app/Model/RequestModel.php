@@ -3,13 +3,19 @@ namespace App\Model;
 
 class RequestModel
 {
-    public const PENDING_STATUS = 0;
+    //for request table
+    public const REQUESTED_STATUS = 0;
     public const APPROVE_STATUS = 1;
     public const RETURNING_STATUS = 2;
     public const RETURNED_STATUS = 3;
     public const REJECTED_STATUS = 4;
     public const ISSUED_DATE = "0000-00-00";
     public const RETURN_DATE = "0000-00-00";
+    //for books table
+    public const ISSUED_STATUS = 1;
+    public const AVAILABLE_STATUS = 0;
+
+    
     protected $conn;
     
     public function __construct($conn)
@@ -19,7 +25,7 @@ class RequestModel
 
     public function RequestBook(int $bookId, int $requesterId, int $ownerId, string $date) : bool
     {
-        $status = RequestModel::PENDING_STATUS;
+        $status = RequestModel::REQUESTED_STATUS;
         $issued_date = RequestModel::ISSUED_DATE;
         $return_date = RequestModel::RETURN_DATE;
         $insertRqst = $this->conn->prepare("insert ignore into request(requester_id, owner_id, book_id, status, rqst_date, issued_date, return_date) VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -36,7 +42,7 @@ class RequestModel
     public function listRequests(int $userId) : array
     {
 
-        $pendingStatus = RequestModel::PENDING_STATUS;
+        $pendingStatus = RequestModel::REQUESTED_STATUS;
         $returningStatus = RequestModel::RETURNING_STATUS;
         $listRqst = $this->conn->prepare("select rg.user_name as requester, bo.book_name as book, rq.status
         from request as rq
@@ -68,7 +74,7 @@ class RequestModel
 
     public function listSentRequest(int $userId) : array
     {
-        $pedingStatus = RequestModel::PENDING_STATUS;
+        $pedingStatus = RequestModel::REQUESTED_STATUS;
         $returningStatus = RequestModel::RETURNING_STATUS;
         $listSentRqst = [];
         $listRqstSent = $this->conn->prepare("select rg.user_name as owner, bo.book_name as book, rq.status
@@ -99,26 +105,42 @@ class RequestModel
         return $sentRqstList;
     }
 
-    public function grantIssueRequest(int $requestingId, string $Date)
+    public function grantIssueRequest(int $requestingId, int $bookId, string $Date)
     {
         $approveRequest = RequestModel::APPROVE_STATUS;
-        $grantIssueQry = $this->conn->prepare("update request set status = ?, issued_date = ? where id = ?");
-        $grantIssueQry->bind_param("isi", $approveRequest, $Date, $requestingId);
+        $issuedStatus = RequestModel::ISSUED_STATUS;
+        $updateBookStatusIssuedStmt = $this->conn->prepare("update books set book_status = ? where id = ?");
+        $updateBookStatusIssuedStmt->bind_param("ii",$issuedStatus, $bookId);
+        $updateBookStatusIssuedStmt->execute();
+        $grantIssueQry = $this->conn->prepare("update request set status = ?, issued_date = ? where (id = ? and book_id = ?)");
+        $grantIssueQry->bind_param("isii", $approveRequest, $Date, $requestingId, $bookId);
         $grantIssueQry->execute();
-        return true;
+        if ($grantIssueQry->affected_rows > 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    public function cancelIssueRequest(int $requestingId, string $cancelMessage)
+    public function cancelIssueRequest(int $requestingId, int $bookId, string $cancelReason)
     {
-        $rejectRequest = RequestModel::REJECTED_STATUS;
-        $cancelIssueRequest = $this->conn->prepare("update request set status = ? where id = ?");
-        $cancelIssueRequest->bind_param("ii", $rejectRequest, $requestingId);
+        $rejectStatus = RequestModel::REJECTED_STATUS;
+        $cancelIssueRequest = $this->conn->prepare("update request set status = ?, reason = ? where (id = ? and book_id = ?)");
+        $cancelIssueRequest->bind_param("isii", $rejectStatus, $cancelReason, $requestingId, $bookId);
         $cancelIssueRequest->execute();
-        return true;
+        if ($cancelIssueRequest->affected_rows > 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
-    public function returnBookRequest(int $requestingId) : bool
+    public function returnBookRequest(int $requestingId, int $bookId) : bool
     {
         $returnValue = RequestModel::RETURNING_STATUS;
+        // $returningStatus = RequestModel::RETURNING_STATUS;
+        $updateBookStatusReturningStmt = $this->conn->prepare("update books set book_status = ? where id = ?");
+        $updateBookStatusReturningStmt->bind_param("ii", $returnValue, $bookId);
+        $updateBookStatusReturningStmt->execute();
         $returnBookQry = $this->conn->prepare("select * from request where id = ?");
         $returnBookQry->bind_param("i", $requestingId);
         $returnBookQry->execute();
@@ -126,8 +148,8 @@ class RequestModel
         $returningStatus = $getStatus['status'];
 
         if($returningStatus == '1') {
-            $returningBook = $this->conn->prepare("update request set status = ? where id = ?");
-            $returningBook->bind_param("ii", $returnValue, $requestingId);
+            $returningBook = $this->conn->prepare("update request set status = ? where (id = ? and book_id = ?)");
+            $returningBook->bind_param("iii", $returnValue, $requestingId, $bookId);
             $returningBook->execute();
             return true;
         } else {
@@ -136,12 +158,20 @@ class RequestModel
 
     }
 
-    public function acceptReturnRequest(int $requestingId, string $Date)
+    public function acceptReturnRequest(int $requestingId, int $bookId, string $Date)
     {
         $acceptReturnRequest = RequestModel::RETURNED_STATUS;
-        $grntRqstQry = $this->conn->prepare("update request set status = ?, return_date = ? where id = ?");
-        $grntRqstQry->bind_param("isi", $acceptReturnRequest, $Date, $requestingId);
+        $availableStatus = RequestModel::AVAILABLE_STATUS;
+        $updateBookStatusReturningStmt = $this->conn->prepare("update books set book_status = ? where id = ?");
+        $updateBookStatusReturningStmt->bind_param("ii", $availableStatus, $bookId);
+        $updateBookStatusReturningStmt->execute();
+        $grntRqstQry = $this->conn->prepare("update request set status = ?, return_date = ? where (id = ? and book_id = ?)");
+        $grntRqstQry->bind_param("isii", $acceptReturnRequest, $Date, $requestingId, $bookId);
         $grntRqstQry->execute();
-        return true;
+        if ($grntRqstQry->affected_rows > 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
