@@ -65,8 +65,6 @@ class BookController
                 ->withStatus(200);
             }
         }
-
-
     }
 
     public function addUpdate(Request $request, Response $response, $args)
