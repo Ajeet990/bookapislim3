@@ -11,9 +11,9 @@ class BookModel
 
     public function listAllBooks() : array
     {
-        $bookListStmt = $this->conn->prepare("SELECT b.*, r.status as request_status 
+        $bookListStmt = $this->conn->prepare("SELECT b.*, r.status as request_status, r.requester_id as requester 
         from books as b
-        inner join request as r
+        left join request as r
         on b.id = r.book_id");
         $bookListStmt->execute();
         $bookLists = $bookListStmt->get_result()->fetch_all(MYSQLI_ASSOC);
