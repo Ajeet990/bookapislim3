@@ -113,12 +113,16 @@ class BookModel
 
     public function getBookDetail(int $bookId)
     {
-        $getBookStmt = $this->conn->prepare("select * from books where id = ?");
+        $getBookStmt = $this->conn->prepare("select b.*, r.status as request_status, r.requester_id as requester 
+        from books b
+        left join request r
+        on b.id = r.book_id
+        where b.id = ?");
         $getBookStmt->bind_param("i", $bookId);
         $getBookStmt->execute();
         $getRst = $getBookStmt->get_result();
         if ($getRst->num_rows > 0) {
-            $book = $getRst->fetch_assoc();
+            $book = $getRst->fetch_all(MYSQLI_ASSOC);
             return $book;
         } else {
             return false;

@@ -263,7 +263,7 @@ class BookController
 
     public function getBookById(Request $request, Response $response, $args)
     {
-        $bookId = $args['bookId'];
+        $bookId = (int)$args['bookId'];
         $bookExists = $this->bookModelObj->checkBookExists($bookId);
         if ($bookExists) {
             $bookDetail = $this->bookModelObj->getBookDetail($bookId);
