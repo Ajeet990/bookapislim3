@@ -158,7 +158,7 @@ class RequestModel
 
     }
 
-    public function acceptReturnRequest(int $requestingId, int $bookId, string $Date)
+    public function acceptReturnRequest(int $requestingId, int $bookId, string $Date) : bool
     {
         $acceptReturnRequest = RequestModel::RETURNED_STATUS;
         $availableStatus = RequestModel::AVAILABLE_STATUS;
@@ -173,5 +173,21 @@ class RequestModel
         } else {
             return false;
         }
+    }
+
+    public function getRequests(int $bookId, int $requesterId)
+    {
+        $getRequestStmt = $this->conn->prepare("select * from request where book_id = ? and requester_id = ?");
+        $getRequestStmt->bind_param("ii", $bookId, $requesterId);
+        $getRequestStmt->execute();
+        $rst = $getRequestStmt->get_result();
+        if ($rst->num_rows > 0) {
+            $getRequestRst = $rst->fetch_assoc();
+            return $getRequestRst;
+        } else {
+            return false;
+        }
+
+
     }
 }

@@ -175,23 +175,31 @@ class UserModel
 
     }
 
-    public function setOtp(String $user_id)
+    public function setOtp(String $mobile_no) : int
     {
         $otp = (int)rand(1000,9999);
-        $setOtpStmt = $this->conn->prepare("UPDATE register set otp = ? where id = ?");
-        $setOtpStmt->bind_param("is", $otp, $user_id);
+        $setOtpStmt = $this->conn->prepare("insert into otp(mobile_no, otp) values(?, ?)");
+        $setOtpStmt->bind_param("si", $mobile_no, $otp);
         $setOtpStmt->execute();
-        return $otp;
+        if ($setOtpStmt->insert_id > 0) {
+            return $otp;
+        } else {
+            return false;
+        }
     }
 
-    public function getOtp(String $user_id)
+    public function getOtp(String $mobile_no)
     {
-        $getOtpStmt = $this->conn->prepare("SELECT * from register where id = ?");
-        $getOtpStmt->bind_param("s", $user_id);
+        $getOtpStmt = $this->conn->prepare("SELECT * from otp where mobile_no = ?");
+        $getOtpStmt->bind_param("s", $mobile_no);
         $getOtpStmt->execute();
         $getOtpRst = $getOtpStmt->get_result();
-        $dbOtp = $getOtpRst->fetch_assoc();
-        return $dbOtp['otp'];
+        if ($getOtpRst->num_rows > 0) {
+            $dbOtp = $getOtpRst->fetch_assoc();
+            return $dbOtp['otp'];
+        } else {
+            return false;
+        }
     }
 
     public function getLang()

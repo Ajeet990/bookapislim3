@@ -35,6 +35,7 @@ $app->group('', function() use ($app) {
 
 
     //End point related to request
+    $app->post('/requestStatus', 'RequestHelper:requestStatus');
     $app->post('/requestBook/{bookId}', 'RequestHelper:requestBook');
     $app->get('/listReceivedRequest/{userId}', 'RequestHelper:listReceivedRequest');
     $app->get('/listSentRequest/{userId}', 'RequestHelper:listSentRequest');

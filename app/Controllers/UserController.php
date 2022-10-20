@@ -292,10 +292,17 @@ class UserController
     {
         $params = $request->getParsedBody();
         $mobile_no = trim($params['mobile_no'] ?? '');
-        $userId = trim($params['user_id'] ?? '');
-        $userExists = $this->userModelObj->checkUserExists($userId);
-        if ($userExists) {
-            $otp = $this->userModelObj->setOtp($userId);
+        if (strlen($mobile_no) != 10) {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "Mobile should be of 10 digit.",
+            "OTP" => null);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        }
+        $otp = $this->userModelObj->setOTP($mobile_no);
+        if ($otp) {
             $jsonMessage = array("isSuccess" => true,
             "message" => "OTP generated.",
             "OTP" => $otp);
@@ -305,7 +312,7 @@ class UserController
             ->withStatus(200);
         } else {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "User does't exists.",
+            "message" => "Mobile already exists.",
             "OTP" => null);
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
@@ -318,8 +325,8 @@ class UserController
     {
         $params = $request->getParsedBody();
         $userOtp = trim($params['otp'] ?? '');
-        $userId = trim($params['user_id'] ?? '');
-        $dbOtp = $this->userModelObj->getOtp($userId);
+        $mobile_no = trim($params['mobile_no'] ?? '');
+        $dbOtp = $this->userModelObj->getOtp($mobile_no);
         if ($userOtp == $dbOtp) {
             $jsonMessage = array("isSuccess" => true,
             "message" => "OTP verified.");
@@ -329,7 +336,7 @@ class UserController
             ->withStatus(200);
         } else {
             $jsonMessage = array("isSuccess" => false,
-            "message" => "Wrong OTP.");
+            "message" => "Mobile or otp wrong.");
             $response->getBody()->write(json_encode($jsonMessage));
             return $response
             ->withHeader("content-type", "application/json")

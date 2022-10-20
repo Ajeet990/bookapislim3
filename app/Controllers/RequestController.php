@@ -192,4 +192,30 @@ class RequestController
             ->withStatus(200);
         }
     }
+
+    public function requestStatus(Request $request, Response $response)
+    {
+        $params = $request->getParsedBody();
+        $bookId = (int)trim($params['book_id'] ?? '');
+        $requesterId = (int)trim($params['requester_id'] ?? '');
+        $requested = $this->requestModelObj->getRequests($bookId, $requesterId);
+        if ($requested) {
+            $jsonMessage = array("isSuccess" => true,
+            "message" => "List of request.",
+            "request" => $requested);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        } else {
+            $jsonMessage = array("isSuccess" => false,
+            "message" => "No request.",
+            "request" => null);
+            $response->getBody()->write(json_encode($jsonMessage));
+            return $response
+            ->withHeader("content-type", "application/json")
+            ->withStatus(200);
+        }
+
+    }
 }
